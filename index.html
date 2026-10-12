@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akinator Bot Prototype</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .app-container {
+            background-color: #1e1e1e;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        select {
+            padding: 8px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+        }
+        .question-box {
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-yes { background-color: #4CAF50; color: white; }
+        .btn-no { background-color: #F44336; color: white; }
+        .btn-dk { background-color: #FF9800; color: white; }
+        .btn-reset { background-color: #2196F3; color: white; margin-top: 15px; width: 100%; display: none;}
+        
+        button:hover { opacity: 0.8; }
+        
+        .result-image {
+            width: 150px;
+            height: 150px;
+            background-color: #333;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h2 style="margin: 0; font-size: 1.5rem;">Mind Reader</h2>
+        <select id="lang-selector" onchange="updateLanguage()">
+            <option value="en">English</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="th">Thanglish</option>
+            <option value="hi">Hinglish</option>
+        </select>
+    </div>
+
+    <div id="result-icon" class="result-image">🔮</div>
+    <div id="question-text" class="question-box">Loading...</div>
+
+    <div id="action-buttons" class="btn-group">
+        <button class="btn-yes" onclick="answer('yes')" id="btn-yes">Yes</button>
+        <button class="btn-no" onclick="answer('no')" id="btn-no">No</button>
+        <button class="btn-dk" onclick="answer('dk')" id="btn-dk">Don't Know</button>
+    </div>
+    
+    <button class="btn-reset" onclick="resetGame()" id="btn-reset">Play Again</button>
+</div>
+
+<script>
+    // UI Translations
+    const uiText = {
+        en: { yes: "Yes", no: "No", dk: "Don't Know", playAgain: "Play Again", guess: "I guess you are thinking of:" },
+        ta: { yes: "ஆம்", no: "இல்லை", dk: "தெரியாது", playAgain: "மீண்டும் விளையாடு", guess: "நீங்கள் நினைப்பது இவரையா:" },
+        th: { yes: "Aama", no: "Illa", dk: "Theriyadhu", playAgain: "Thirumba play pannu", guess: "Neenga nekkiradhu ivara:" },
+        hi: { yes: "Haan", no: "Nahi", dk: "Pata Nahi", playAgain: "Fir se khelein", guess: "Aap shayad inke baare mein soch rahe hain:" }
+    };
+
+    // Decision Tree Logic
+    const decisionTree = {
+        en: "Is your character an actor?",
+        ta: "உங்கள் கேரக்டர் ஒரு நடிகரா?",
+        th: "Unga character oru actor ah?",
+        hi: "Kya aapka character ek actor hai?",
+        yes: {
+            en: "Did this actor star in the movie 'Leo' or 'Master'?",
+            ta: "இந்த நடிகர் 'Leo' அல்லது 'Master' படத்தில் நடித்தாரா?",
+            th: "Indha actor 'Leo' illa 'Master' padathula nadichar ah?",
+            hi: "Kya is actor ne 'Leo' ya 'Master' movie mein kaam kiya hai?",
+            yes: "Thalapathy Vijay",
+            no: "Actor Suriya"
+        },
+        no: {
+            en: "Is your character a superhero?",
+            ta: "உங்கள் கேரக்டர் ஒரு சூப்பர் ஹீரோவா?",
+            th: "Unga character oru superhero ah?",
+            hi: "Kya aapka character ek superhero hai?",
+            yes: {
+                en: "Does this hero have pet cats named Charlie and Max?",
+                ta: "இந்த ஹீரோவுக்கு சார்லி, மேக்ஸ் என்ற பூனைகள் உள்ளதா?",
+                th: "Indha hero ku Charlie, Max nu pet cats irukka?",
+                hi: "Kya is hero ke paas Charlie aur Max naam ki pet cats hain?",
+                yes: "Super Max",
+                no: "Iron Man"
+            },
+            no: "A normal person"
+        }
+    };
+
+    let currentNode = decisionTree;
+    let currentLang = 'en';
+
+    function updateLanguage() {
+        currentLang = document.getElementById('lang-selector').value;
+        
+        // Update Buttons
+        document.getElementById('btn-yes').innerText = uiText[currentLang].yes;
+        document.getElementById('btn-no').innerText = uiText[currentLang].no;
+        document.getElementById('btn-dk').innerText = uiText[currentLang].dk;
+        document.getElementById('btn-reset').innerText = uiText[currentLang].playAgain;
+
+        renderNode();
+    }
+
+    function renderNode() {
+        const qText = document.getElementById('question-text');
+        
+        if (typeof currentNode === 'string') {
+            // It's a final guess (leaf node)
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('btn-reset').style.display = 'block';
+            document.getElementById('result-icon').style.display = 'flex';
+            
+            qText.innerHTML = `<strong>${uiText[currentLang].guess}</strong><br><br><span style="font-size: 1.5rem; color: #4CAF50;">${currentNode}</span>`;
+        } else {
+            // It's a question
+            qText.innerText = currentNode[currentLang];
+        }
+    }
+
+    function answer(choice) {
+        if (choice === 'yes' && currentNode.yes) {
+            currentNode = currentNode.yes;
+        } else if (choice === 'no' && currentNode.no) {
+            currentNode = currentNode.no;
+        } else if (choice === 'dk') {
+            // Defaulting 'Don't Know' to 'No' path for this simple prototype
+            currentNode = currentNode.no; 
+        }
+        renderNode();
+    }
+
+    function resetGame() {
+        currentNode = decisionTree;
+        document.getElementById('action-buttons').style.display = 'flex';
+        document.getElementById('btn-reset').style.display = 'none';
+        document.getElementById('result-icon').style.display = 'none';
+        renderNode();
+    }
+
+    // Initialize
+    updateLanguage();
+</script>
+
+</body>
+</html>
