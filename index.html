@@ -3,327 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akinator Bot Prototype</title>
+    <title>Web PDF Printer</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
         body {
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden; /* Prevent scrolling */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        /* Start Screen Overlay */
-        #start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .ui-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        textarea {
             width: 100%;
-            height: 100%;
-            background-color: #121212;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
+            height: 300px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
         }
-        
-        .btn-start {
-            background-color: #4CAF50;
+
+        button {
+            margin-top: 15px;
+            padding: 12px 24px;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 12px;
+            border-radius: 4px;
+            font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            transition: transform 0.2s;
-            animation: pulse 2s infinite;
-        }
-        
-        .btn-start:active {
-            transform: scale(0.95);
+            transition: background-color 0.3s;
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        button:hover {
+            background-color: #0056b3;
         }
 
-        /* Main App Container */
-        .app-container {
-            background-color: #1e1e1e;
-            width: 100%;
-            max-width: 400px;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            text-align: center;
-            display: none; /* Hidden until start */
-            flex-direction: column;
-        }
-
-        /* Fullscreen styles for the container */
-        :fullscreen .app-container {
-            max-width: 100%;
-            height: 100vh;
-            border-radius: 0;
-            justify-content: center;
-        }
-        :-webkit-full-screen .app-container {
-            max-width: 100%;
-            height: 100vh;
-            border-radius: 0;
-            justify-content: center;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-        .header-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        select {
-            padding: 8px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            outline: none;
-        }
-        .btn-fullscreen {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 5px;
-            transition: color 0.2s;
-        }
-        .btn-fullscreen:hover {
-            color: #fff;
-        }
-        .question-box {
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #2a2a2a;
-            border-radius: 8px;
-        }
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        button.action-btn {
-            padding: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-yes { background-color: #4CAF50; color: white; }
-        .btn-no { background-color: #F44336; color: white; }
-        .btn-dk { background-color: #FF9800; color: white; }
-        .btn-reset { background-color: #2196F3; color: white; margin-top: 15px; width: 100%; max-width: 300px; display: none; align-self: center;}
-        
-        button.action-btn:hover, .btn-reset:hover { opacity: 0.8; }
-        
-        .result-image {
-            width: 150px;
-            height: 150px;
-            background-color: #333;
-            border-radius: 50%;
-            margin: 0 auto 15px auto;
+        /* This area is only visible to the print engine */
+        #print-area {
             display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
+            white-space: pre-wrap; /* Keeps line breaks */
+            font-size: 12pt;
+            line-height: 1.5;
+            color: black;
+        }
+
+        /* The @media print rule hides the UI and only shows the text when saving to PDF */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .ui-container {
+                display: none;
+            }
+            #print-area {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- Start Screen -->
-<div id="start-screen">
-    <h1 style="margin-bottom: 30px; font-size: 2.5rem;">Mind Reader</h1>
-    <button class="btn-start" onclick="startApp()">Tap to Start</button>
-</div>
-
-<!-- Main App -->
-<div class="app-container" id="app">
-    <div class="header">
-        <h2 style="margin: 0; font-size: 1.5rem;">Mind Reader</h2>
-        <div class="header-controls">
-            <select id="lang-selector" onchange="updateLanguage()">
-                <option value="en">English</option>
-                <option value="ta">தமிழ் (Tamil)</option>
-                <option value="th">Thanglish</option>
-                <option value="hi">Hinglish</option>
-            </select>
-            <button class="btn-fullscreen" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶</button>
-        </div>
+    <!-- User Interface -->
+    <div class="ui-container">
+        <h2>Web PDF Printer</h2>
+        <p>Type or paste your content below, then click to generate a PDF.</p>
+        <textarea id="inputText" placeholder="Enter your document text here..."></textarea>
+        <button onclick="generatePDF()">Print / Save as PDF</button>
     </div>
 
-    <div id="result-icon" class="result-image">🔮</div>
-    <div id="question-text" class="question-box">Loading...</div>
+    <!-- Hidden Print Container -->
+    <div id="print-area"></div>
 
-    <div id="action-buttons" class="btn-group">
-        <button class="action-btn btn-yes" onclick="answer('yes')" id="btn-yes">Yes</button>
-        <button class="action-btn btn-no" onclick="answer('no')" id="btn-no">No</button>
-        <button class="action-btn btn-dk" onclick="answer('dk')" id="btn-dk">Don't Know</button>
-    </div>
-    
-    <button class="btn-reset" onclick="resetGame()" id="btn-reset">Play Again</button>
-</div>
-
-<script>
-    // --- Fullscreen & Startup Logic ---
-    function startApp() {
-        // Request Fullscreen
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.log("Fullscreen blocked"));
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
-            elem.webkitRequestFullscreen().catch(err => console.log("Fullscreen blocked"));
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-            elem.msRequestFullscreen().catch(err => console.log("Fullscreen blocked"));
-        }
-
-        // Hide start screen and show app
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        
-        // Initialize game language
-        updateLanguage();
-    }
-
-    function toggleFullScreen() {
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {  
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
-        }
-    }
-
-    // --- Game Logic ---
-    const uiText = {
-        en: { yes: "Yes", no: "No", dk: "Don't Know", playAgain: "Play Again", guess: "I guess you are thinking of:" },
-        ta: { yes: "ஆம்", no: "இல்லை", dk: "தெரியாது", playAgain: "மீண்டும் விளையாடு", guess: "நீங்கள் நினைப்பது இவரையா:" },
-        th: { yes: "Aama", no: "Illa", dk: "Theriyadhu", playAgain: "Thirumba play pannu", guess: "Neenga nekkiradhu ivara:" },
-        hi: { yes: "Haan", no: "Nahi", dk: "Pata Nahi", playAgain: "Fir se khelein", guess: "Aap shayad inke baare mein soch rahe hain:" }
-    };
-
-    const decisionTree = {
-        en: "Is your character an actor?",
-        ta: "உங்கள் கேரக்டர் ஒரு நடிகரா?",
-        th: "Unga character oru actor ah?",
-        hi: "Kya aapka character ek actor hai?",
-        yes: {
-            en: "Did this actor star in the movie 'Leo' or 'Master'?",
-            ta: "இந்த நடிகர் 'Leo' அல்லது 'Master' படத்தில் நடித்தாரா?",
-            th: "Indha actor 'Leo' illa 'Master' padathula nadichar ah?",
-            hi: "Kya is actor ne 'Leo' ya 'Master' movie mein kaam kiya hai?",
-            yes: "Thalapathy Vijay",
-            no: "Actor Suriya"
-        },
-        no: {
-            en: "Is your character a superhero?",
-            ta: "உங்கள் கேரக்டர் ஒரு சூப்பர் ஹீரோவா?",
-            th: "Unga character oru superhero ah?",
-            hi: "Kya aapka character ek superhero hai?",
-            yes: {
-                en: "Does this hero have pet cats named Charlie and Max?",
-                ta: "இந்த ஹீரோவுக்கு சார்லி, மேக்ஸ் என்ற பூனைகள் உள்ளதா?",
-                th: "Indha hero ku Charlie, Max nu pet cats irukka?",
-                hi: "Kya is hero ke paas Charlie aur Max naam ki pet cats hain?",
-                yes: "Super Max",
-                no: "Iron Man"
-            },
-            no: "A normal person"
-        }
-    };
-
-    let currentNode = decisionTree;
-    let currentLang = 'en';
-
-    function updateLanguage() {
-        currentLang = document.getElementById('lang-selector').value;
-        
-        document.getElementById('btn-yes').innerText = uiText[currentLang].yes;
-        document.getElementById('btn-no').innerText = uiText[currentLang].no;
-        document.getElementById('btn-dk').innerText = uiText[currentLang].dk;
-        document.getElementById('btn-reset').innerText = uiText[currentLang].playAgain;
-
-        renderNode();
-    }
-
-    function renderNode() {
-        const qText = document.getElementById('question-text');
-        
-        if (typeof currentNode === 'string') {
-            document.getElementById('action-buttons').style.display = 'none';
-            document.getElementById('btn-reset').style.display = 'block';
-            document.getElementById('result-icon').style.display = 'flex';
+    <script>
+        function generatePDF() {
+            // 1. Get the text from the textarea
+            const textContent = document.getElementById('inputText').value;
             
-            qText.innerHTML = `<strong>${uiText[currentLang].guess}</strong><br><br><span style="font-size: 1.5rem; color: #4CAF50;">${currentNode}</span>`;
-        } else {
-            qText.innerText = currentNode[currentLang];
-        }
-    }
+            if (textContent.trim() === "") {
+                alert("Please enter some text first.");
+                return;
+            }
 
-    function answer(choice) {
-        if (choice === 'yes' && currentNode.yes) {
-            currentNode = currentNode.yes;
-        } else if (choice === 'no' && currentNode.no) {
-            currentNode = currentNode.no;
-        } else if (choice === 'dk') {
-            currentNode = currentNode.no; 
-        }
-        renderNode();
-    }
+            // 2. Push the text to the hidden print area
+            document.getElementById('print-area').innerText = textContent;
 
-    function resetGame() {
-        currentNode = decisionTree;
-        document.getElementById('action-buttons').style.display = 'flex';
-        document.getElementById('btn-reset').style.display = 'none';
-        document.getElementById('result-icon').style.display = 'none';
-        renderNode();
-    }
-</script>
+            // 3. Trigger the browser's native Print dialog
+            // When the dialog opens, select "Save as PDF" as the destination.
+            window.print();
+        }
+    </script>
 
 </body>
 </html>
