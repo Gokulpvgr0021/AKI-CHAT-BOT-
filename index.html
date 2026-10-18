@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Magnum Clothing SKL - Daily Attendance</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- html2pdf library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -32,16 +31,13 @@
         .container {
             background-color: var(--surface);
             width: 100%;
-            max-width: 1000px;
+            max-width: 1050px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             overflow: hidden;
         }
 
-        /* The area that gets captured for the PDF */
-        #print-area {
-            background-color: var(--surface);
-        }
+        #print-area { background-color: var(--surface); }
 
         .header {
             background-color: var(--primary);
@@ -49,7 +45,6 @@
             padding: 30px;
             text-align: center;
             border-bottom: 4px solid var(--accent);
-            position: relative;
         }
 
         .header h1 {
@@ -75,12 +70,6 @@
             gap: 10px;
         }
 
-        .date-container label {
-            color: #cbd5e1;
-            font-weight: 400;
-            font-size: 14px;
-        }
-
         .date-container input[type="date"] {
             padding: 5px 10px;
             border: 1px solid var(--accent);
@@ -92,9 +81,7 @@
             color-scheme: dark;
         }
 
-        .content {
-            padding: 30px;
-        }
+        .content { padding: 30px; }
 
         table { 
             width: 100%; 
@@ -104,7 +91,7 @@
 
         th { 
             text-align: left; 
-            padding: 15px; 
+            padding: 15px 10px; 
             font-weight: 600;
             color: var(--text-light);
             border-bottom: 2px solid var(--border);
@@ -114,7 +101,7 @@
         }
 
         td { 
-            padding: 10px 15px; 
+            padding: 10px; 
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
@@ -122,7 +109,7 @@
         input[type="text"], input[type="time"] { 
             width: 100%;
             padding: 10px; 
-            border: 1px solid var(--border);
+            border: 1px solid transparent;
             border-radius: 6px;
             font-family: 'Poppins', sans-serif;
             font-size: 14px;
@@ -132,16 +119,32 @@
             background: transparent;
         }
 
-        input[type="text"]:focus, input[type="time"]:focus {
-            border-color: var(--accent);
+        input[type="text"]:focus, input[type="time"]:focus, input[type="text"]:hover, input[type="time"]:hover {
+            border-color: var(--border);
+            background: #f8fafc;
         }
 
         .total-hours {
             font-weight: 600;
             color: var(--primary);
-            font-size: 16px;
+            font-size: 15px;
             text-align: center;
         }
+
+        /* Status Badge Styling */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            min-width: 85px;
+        }
+
+        .absent { background-color: #fee2e2; color: #dc2626; }
+        .present { background-color: #dcfce7; color: #16a34a; }
 
         .action-buttons {
             display: flex;
@@ -160,9 +163,9 @@
             transition: background-color 0.3s ease, transform 0.1s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             flex: 1;
-            justify-content: center;
         }
 
         .btn-add { 
@@ -170,7 +173,6 @@
             color: var(--primary);
             border: 1px solid var(--border);
         }
-
         .btn-add:hover { background-color: #e2e8f0; }
 
         .btn-download {
@@ -178,9 +180,7 @@
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
         .btn-download:hover { background-color: #0f172a; }
-
         button:active { transform: scale(0.98); }
 
     </style>
@@ -188,13 +188,11 @@
 <body>
 
     <div class="container">
-        <!-- Everything inside print-area gets exported to the PDF -->
         <div id="print-area">
             <div class="header">
                 <h1>Magnum Clothing SKL Warehouse</h1>
                 <p>Fabric Team • Daily Attendance & Hours</p>
                 <div class="date-container">
-                    <label for="attendanceDate">Date:</label>
                     <input type="date" id="attendanceDate">
                 </div>
             </div>
@@ -203,28 +201,23 @@
                 <table id="attendanceTable">
                     <thead>
                         <tr>
-                            <th>Staff Member</th>
-                            <th>In-Time</th>
-                            <th>Out-Time</th>
-                            <th style="text-align: center;">Total Hours</th>
+                            <th style="width: 25%;">Staff Member</th>
+                            <th style="width: 20%;">In-Time</th>
+                            <th style="width: 20%;">Out-Time</th>
+                            <th style="text-align: center; width: 15%;">Hours</th>
+                            <th style="text-align: center; width: 20%;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Enter full name..."></td>
-                            <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
-                            <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
-                            <td class="total-hours">0.00 hrs</td>
-                        </tr>
+                        <!-- Rows are injected by JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Buttons are placed outside the print-area so they aren't in the PDF -->
         <div class="action-buttons" id="action-buttons">
-            <button class="btn-add" onclick="addRow()">
-                <span>+</span> Add New Record
+            <button class="btn-add" onclick="addBlankRow()">
+                <span>+</span> Add Extra Row
             </button>
             <button class="btn-download" onclick="generatePDF()">
                 Download as PDF
@@ -233,70 +226,102 @@
     </div>
 
     <script>
-        // Set today's date automatically when the page loads
+        // Set today's date automatically
         document.getElementById('attendanceDate').valueAsDate = new Date();
 
-        function calculateHours(element) {
+        // Editable list of your staff - change these names as needed
+        const staffList = [
+            "Gokul P",
+            "Staff Member 2",
+            "Staff Member 3",
+            "Staff Member 4",
+            "Staff Member 5"
+        ];
+
+        // Initialize table on load
+        window.onload = function() {
+            const tbody = document.querySelector("#attendanceTable tbody");
+            staffList.forEach(name => createRow(tbody, name));
+        };
+
+        function createRow(tbody, name = "") {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="text" value="${name}" placeholder="Enter name..."></td>
+                <td><input type="time" class="in-time" onchange="updateRow(this)"></td>
+                <td><input type="time" class="out-time" onchange="updateRow(this)"></td>
+                <td class="total-hours">0.00 hrs</td>
+                <td style="text-align: center;"><span class="status-badge absent">Absent</span></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function addBlankRow() {
+            const tbody = document.querySelector("#attendanceTable tbody");
+            createRow(tbody, "");
+        }
+
+        function updateRow(element) {
             let row = element.closest('tr');
             let inTime = row.querySelector('.in-time').value;
             let outTime = row.querySelector('.out-time').value;
+            let statusBadge = row.querySelector('.status-badge');
+            let totalCell = row.querySelector('.total-hours');
             
+            // Auto-mark Present/Absent
+            if (inTime || outTime) {
+                statusBadge.innerText = "Present";
+                statusBadge.className = "status-badge present";
+            } else {
+                statusBadge.innerText = "Absent";
+                statusBadge.className = "status-badge absent";
+                totalCell.innerText = "0.00 hrs";
+                totalCell.style.color = "var(--primary)";
+                return; // Stop here if both are empty
+            }
+
+            // Calculate hours if both times are filled
             if (inTime && outTime) {
                 let inDate = new Date("01/01/2000 " + inTime);
                 let outDate = new Date("01/01/2000 " + outTime);
                 
-                // Account for overnight shifts
                 if (outDate < inDate) {
                     outDate.setDate(outDate.getDate() + 1); 
                 }
                 
                 let diff = (outDate - inDate) / 1000 / 60 / 60; 
-                
-                let totalCell = row.querySelector('.total-hours');
                 totalCell.innerText = diff.toFixed(2) + " hrs";
                 totalCell.style.color = "#d4af37"; 
+            } else {
+                totalCell.innerText = "0.00 hrs";
+                totalCell.style.color = "var(--primary)";
             }
         }
 
-        function addRow() {
-            let table = document.getElementById("attendanceTable").getElementsByTagName('tbody')[0];
-            let newRow = table.rows[0].cloneNode(true);
-            
-            let inputs = newRow.querySelectorAll('input');
-            inputs.forEach(input => input.value = '');
-            
-            let totalCell = newRow.querySelector('.total-hours');
-            totalCell.innerText = '0.00 hrs';
-            totalCell.style.color = "var(--primary)";
-            
-            table.appendChild(newRow);
-        }
-
         function generatePDF() {
-            // Target the specific element to convert
             const element = document.getElementById('print-area');
             const dateValue = document.getElementById('attendanceDate').value;
             
-            // Set formatting options
             const opt = {
-                margin:       [0, 0, 0, 0], // Top, Left, Bottom, Right
+                margin:       [0, 0, 0, 0],
                 filename:     `Magnum_Fabric_Attendance_${dateValue}.pdf`,
                 image:        { type: 'jpeg', quality: 1.0 },
                 html2canvas:  { 
                     scale: 2, 
                     useCORS: true,
-                    // Ensure inputs render accurately in the PDF
                     onclone: function (clonedDoc) {
+                        // Hardcode input values so they appear correctly in PDF
                         let inputs = clonedDoc.querySelectorAll('input');
                         inputs.forEach(input => {
-                            input.setAttribute('value', input.value);
+                            if (input.type === 'text' || input.type === 'time' || input.type === 'date') {
+                                input.setAttribute('value', input.value);
+                            }
                         });
                     }
                 },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate and save the PDF
             html2pdf().set(opt).from(element).save();
         }
     </script>
