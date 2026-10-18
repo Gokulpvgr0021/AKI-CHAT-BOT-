@@ -3,110 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web PDF Printer</title>
+    <title>Staff Attendance Tracker</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .ui-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-
-        textarea {
-            width: 100%;
-            height: 300px;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-            resize: vertical;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 12px 24px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* This area is only visible to the print engine */
-        #print-area {
-            display: none;
-            white-space: pre-wrap; /* Keeps line breaks */
-            font-size: 12pt;
-            line-height: 1.5;
-            color: black;
-        }
-
-        /* The @media print rule hides the UI and only shows the text when saving to PDF */
-        @media print {
-            body {
-                background-color: white;
-                padding: 0;
-            }
-            .ui-container {
-                display: none;
-            }
-            #print-area {
-                display: block;
-            }
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        input[type="text"], input[type="time"] { padding: 5px; width: 90%; }
+        button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- User Interface -->
-    <div class="ui-container">
-        <h2>Web PDF Printer</h2>
-        <p>Type or paste your content below, then click to generate a PDF.</p>
-        <textarea id="inputText" placeholder="Enter your document text here..."></textarea>
-        <button onclick="generatePDF()">Print / Save as PDF</button>
-    </div>
+    <h2>Daily Staff Attendance</h2>
+    
+    <table id="attendanceTable">
+        <thead>
+            <tr>
+                <th>Staff Name</th>
+                <th>In-Time</th>
+                <th>Out-Time</th>
+                <th>Total Hours</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" placeholder="Enter Name"></td>
+                <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
+                <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
+                <td class="total-hours">0.00 hrs</td>
+            </tr>
+        </tbody>
+    </table>
 
-    <!-- Hidden Print Container -->
-    <div id="print-area"></div>
+    <button onclick="addRow()">+ Add Staff Member</button>
 
     <script>
-        function generatePDF() {
-            // 1. Get the text from the textarea
-            const textContent = document.getElementById('inputText').value;
+        function calculateHours(element) {
+            let row = element.closest('tr');
+            let inTime = row.querySelector('.in-time').value;
+            let outTime = row.querySelector('.out-time').value;
             
-            if (textContent.trim() === "") {
-                alert("Please enter some text first.");
-                return;
+            if (inTime && outTime) {
+                let inDate = new Date("01/01/2000 " + inTime);
+                let outDate = new Date("01/01/2000 " + outTime);
+                
+                // Account for overnight shifts past midnight
+                if (outDate < inDate) {
+                    outDate.setDate(outDate.getDate() + 1); 
+                }
+                
+                let diff = (outDate - inDate) / 1000 / 60 / 60; // convert milliseconds to hours
+                row.querySelector('.total-hours').innerText = diff.toFixed(2) + " hrs";
             }
+        }
 
-            // 2. Push the text to the hidden print area
-            document.getElementById('print-area').innerText = textContent;
-
-            // 3. Trigger the browser's native Print dialog
-            // When the dialog opens, select "Save as PDF" as the destination.
-            window.print();
+        function addRow() {
+            let table = document.getElementById("attendanceTable").getElementsByTagName('tbody')[0];
+            let newRow = table.rows[0].cloneNode(true);
+            
+            // Clear the inputs in the cloned row
+            let inputs = newRow.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+            newRow.querySelector('.total-hours').innerText = '0.00 hrs';
+            
+            table.appendChild(newRow);
         }
     </script>
 
