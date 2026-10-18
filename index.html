@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Settings (Makes it look like a real app without search bar if added to home screen) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Magnum%20Portal%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a0a%22%7D'>
+
     <title>Magnum SKL - Premium Portal</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -34,6 +41,17 @@
         
         .view { display: none; width: 100%; height: 100%; flex-direction: column; }
         .view.active { display: flex; }
+
+        /* ================= FULLSCREEN WELCOME OVERLAY ================= */
+        #welcome-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; text-align: center;
+        }
+        #welcome-overlay h1 { font-size: 42px; color: var(--gold); text-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); text-transform: uppercase; letter-spacing: 3px; }
+        #welcome-overlay p { color: var(--text-muted); font-size: 15px; margin-top: 15px; animation: blink 1.5s infinite; letter-spacing: 1px; text-transform: uppercase; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         /* Scrollbar styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -113,7 +131,7 @@
         .add-staff-form input { flex: 1; padding: 12px 15px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-dark); color: white; outline: none; }
         .add-staff-form button { padding: 12px 20px; border-radius: 10px; border: none; background: var(--gold); color: black; font-weight: 600; cursor: pointer; }
 
-        /* ================= PDF MODE (Forces Clean White Look for Print) ================= */
+        /* ================= PDF MODE ================= */
         .pdf-mode { background: white !important; color: black !important; }
         .pdf-mode .top-bar, .pdf-mode .bottom-bar, .pdf-mode .admin-controls { display: none !important; }
         .pdf-mode #print-area { padding-bottom: 0; }
@@ -126,8 +144,14 @@
 </head>
 <body>
 
+    <!-- 0. FULLSCREEN WELCOME OVERLAY -->
+    <div id="welcome-overlay" onclick="startApp()">
+        <h1>Magnum SKL</h1>
+        <p>Tap anywhere to start portal</p>
+    </div>
+
     <!-- 1. ROLE SELECTION SCREEN -->
-    <div id="role-select-view" class="view active">
+    <div id="role-select-view" class="view">
         <div class="logo-title">Magnum SKL</div>
         <p style="color: var(--text-muted); margin-bottom: 50px; font-style: italic;">Premium Fabric Team Portal</p>
         <button class="role-btn btn-staff" onclick="openStaff()">Staff Login</button>
@@ -208,7 +232,7 @@
     </div>
 
     <script>
-        // ================= FIREBASE CONFIG (YOURS) =================
+        // ================= FIREBASE CONFIG =================
         const firebaseConfig = {
             apiKey: "AIzaSyCd3HHP3hHLBnEkqOvK8jgBAGE99_mj_6k",
             authDomain: "magnum-clothing-attendance.firebaseapp.com",
@@ -225,11 +249,22 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
         } catch(e) {
-            alert("Firebase connection error. Check internet or config.");
+            alert("Firebase connection error.");
         }
 
-        // Global State for Dynamic Staff List
         let globalStaffList = [];
+
+        // ================= FULLSCREEN & BOOT =================
+        function startApp() {
+            // Force browser into fullscreen mode on user click
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
+
+            // Hide overlay, show app
+            document.getElementById('welcome-overlay').style.display = 'none';
+            document.getElementById('role-select-view').classList.add('active');
+        }
 
         // Utils
         function getLocalDate() {
@@ -247,33 +282,19 @@
         function logout() { switchView('role-select-view'); }
 
         // ================= APP INITIALIZATION =================
-        // Listen to live staff list changes from Firebase
         if (db) {
             db.ref('magnum_settings/staffList').on('value', snap => {
                 const data = snap.val();
                 if (data && Array.isArray(data)) {
                     globalStaffList = data;
                 } else {
-                    // Default if database is empty
                     globalStaffList = ["Gokul P"];
                     db.ref('magnum_settings/staffList').set(globalStaffList);
                 }
                 
-                // If Staff App is open, update dropdown
-                if (document.getElementById('staff-view').classList.contains('active')) {
-                    populateStaffDropdown();
-                }
-                
-                // If Admin App is open, update table
-                if (document.getElementById('admin-view').classList.contains('active')) {
-                    initAdminTable();
-                    loadAdminData();
-                }
-
-                // If Manager Modal is open, update list
-                if (document.getElementById('staffModal').classList.contains('active')) {
-                    renderStaffEditorList();
-                }
+                if (document.getElementById('staff-view').classList.contains('active')) populateStaffDropdown();
+                if (document.getElementById('admin-view').classList.contains('active')) { initAdminTable(); loadAdminData(); }
+                if (document.getElementById('staffModal').classList.contains('active')) renderStaffEditorList();
             });
         }
 
@@ -315,8 +336,6 @@
         function loadAdminData() {
             if(!db) return;
             const date = document.getElementById('attendanceDate').value;
-            
-            // Unsubscribe from old date listener to prevent memory leaks
             db.ref(`magnum_attendance`).off(); 
             
             db.ref(`magnum_attendance/${date}`).on('value', snap => {
@@ -332,7 +351,7 @@
                     const statusBadge = document.getElementById(`status-${index}`);
                     const hrs = document.getElementById(`hrs-${index}`);
 
-                    if(!inEl) return; // Prevent error if DOM isn't ready
+                    if(!inEl) return; 
 
                     inEl.innerText = inTime || "--:--";
                     inEl.style.color = inTime ? "white" : "var(--text-muted)";
@@ -419,7 +438,6 @@
             if(newName && newName.trim() !== "" && newName !== oldName) {
                 globalStaffList[index] = newName.trim();
                 db.ref('magnum_settings/staffList').set(globalStaffList);
-                // Note: Past records in DB will still have the old name. This only updates future tracking.
             }
         }
 
@@ -453,7 +471,6 @@
             const name = document.getElementById('staffNameSelect').value;
             const today = getLocalDate();
             
-            // Prevent multiple listeners if they change names repeatedly
             db.ref(`magnum_attendance/${today}`).off(); 
 
             db.ref(`magnum_attendance/${today}/${name}`).on('value', snap => {
@@ -488,7 +505,6 @@
             db.ref(`magnum_attendance/${today}/${name}`).update({
                 [type]: time
             }).then(() => {
-                // Optional: visual vibration or feedback on success
                 if(navigator.vibrate) navigator.vibrate(50);
             }).catch(error => {
                 alert("Error connecting to server. Check internet.");
