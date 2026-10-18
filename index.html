@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magnum Clothing SKL - Premium Attendance</title>
+    <title>Magnum Clothing SKL - Daily Attendance</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- html2pdf library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --primary: #1e293b; /* Deep slate */
-            --accent: #d4af37; /* Premium Gold */
+            --primary: #1e293b; 
+            --accent: #d4af37; 
             --bg-color: #f8fafc;
             --surface: #ffffff;
             --text-main: #334155;
@@ -16,11 +18,7 @@
             --border: #e2e8f0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body { 
             font-family: 'Poppins', sans-serif; 
@@ -40,12 +38,18 @@
             overflow: hidden;
         }
 
+        /* The area that gets captured for the PDF */
+        #print-area {
+            background-color: var(--surface);
+        }
+
         .header {
             background-color: var(--primary);
             color: white;
             padding: 30px;
             text-align: center;
             border-bottom: 4px solid var(--accent);
+            position: relative;
         }
 
         .header h1 {
@@ -61,6 +65,31 @@
             color: #cbd5e1;
             margin-top: 5px;
             letter-spacing: 2px;
+        }
+
+        .date-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-container label {
+            color: #cbd5e1;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        .date-container input[type="date"] {
+            padding: 5px 10px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            color-scheme: dark;
         }
 
         .content {
@@ -85,42 +114,42 @@
         }
 
         td { 
-            padding: 15px; 
+            padding: 10px 15px; 
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
 
-        tr:hover {
-            background-color: #f1f5f9;
-            transition: background-color 0.3s ease;
-        }
-
         input[type="text"], input[type="time"] { 
             width: 100%;
-            padding: 10px 15px; 
+            padding: 10px; 
             border: 1px solid var(--border);
             border-radius: 6px;
             font-family: 'Poppins', sans-serif;
             font-size: 14px;
             color: var(--text-main);
             outline: none;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: border-color 0.3s ease;
+            background: transparent;
         }
 
         input[type="text"]:focus, input[type="time"]:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
         .total-hours {
             font-weight: 600;
             color: var(--primary);
             font-size: 16px;
+            text-align: center;
         }
 
-        .btn-add { 
-            background-color: var(--primary);
-            color: white;
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            padding: 0 30px 30px 30px;
+        }
+
+        button {
             border: none;
             padding: 12px 24px; 
             border-radius: 6px;
@@ -132,52 +161,81 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            flex: 1;
+            justify-content: center;
         }
 
-        .btn-add:hover {
-            background-color: #0f172a;
+        .btn-add { 
+            background-color: #f1f5f9;
+            color: var(--primary);
+            border: 1px solid var(--border);
         }
 
-        .btn-add:active {
-            transform: scale(0.98);
+        .btn-add:hover { background-color: #e2e8f0; }
+
+        .btn-download {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        .btn-download:hover { background-color: #0f172a; }
+
+        button:active { transform: scale(0.98); }
+
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <h1>Magnum Clothing SKL Warehouse</h1>
-            <p>Fabric Team • Daily Attendance & Hours</p>
+        <!-- Everything inside print-area gets exported to the PDF -->
+        <div id="print-area">
+            <div class="header">
+                <h1>Magnum Clothing SKL Warehouse</h1>
+                <p>Fabric Team • Daily Attendance & Hours</p>
+                <div class="date-container">
+                    <label for="attendanceDate">Date:</label>
+                    <input type="date" id="attendanceDate">
+                </div>
+            </div>
+            
+            <div class="content">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Staff Member</th>
+                            <th>In-Time</th>
+                            <th>Out-Time</th>
+                            <th style="text-align: center;">Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Enter full name..."></td>
+                            <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
+                            <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
+                            <td class="total-hours">0.00 hrs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        
-        <div class="content">
-            <table id="attendanceTable">
-                <thead>
-                    <tr>
-                        <th>Staff Member</th>
-                        <th>In-Time</th>
-                        <th>Out-Time</th>
-                        <th>Total Hours</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><input type="text" placeholder="Enter full name..."></td>
-                        <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
-                        <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
-                        <td class="total-hours">0.00 hrs</td>
-                    </tr>
-                </tbody>
-            </table>
 
+        <!-- Buttons are placed outside the print-area so they aren't in the PDF -->
+        <div class="action-buttons" id="action-buttons">
             <button class="btn-add" onclick="addRow()">
                 <span>+</span> Add New Record
+            </button>
+            <button class="btn-download" onclick="generatePDF()">
+                Download as PDF
             </button>
         </div>
     </div>
 
     <script>
+        // Set today's date automatically when the page loads
+        document.getElementById('attendanceDate').valueAsDate = new Date();
+
         function calculateHours(element) {
             let row = element.closest('tr');
             let inTime = row.querySelector('.in-time').value;
@@ -187,14 +245,13 @@
                 let inDate = new Date("01/01/2000 " + inTime);
                 let outDate = new Date("01/01/2000 " + outTime);
                 
-                // Account for overnight shifts past midnight
+                // Account for overnight shifts
                 if (outDate < inDate) {
                     outDate.setDate(outDate.getDate() + 1); 
                 }
                 
                 let diff = (outDate - inDate) / 1000 / 60 / 60; 
                 
-                // Add a subtle color highlight if hours are calculated successfully
                 let totalCell = row.querySelector('.total-hours');
                 totalCell.innerText = diff.toFixed(2) + " hrs";
                 totalCell.style.color = "#d4af37"; 
@@ -213,6 +270,34 @@
             totalCell.style.color = "var(--primary)";
             
             table.appendChild(newRow);
+        }
+
+        function generatePDF() {
+            // Target the specific element to convert
+            const element = document.getElementById('print-area');
+            const dateValue = document.getElementById('attendanceDate').value;
+            
+            // Set formatting options
+            const opt = {
+                margin:       [0, 0, 0, 0], // Top, Left, Bottom, Right
+                filename:     `Magnum_Fabric_Attendance_${dateValue}.pdf`,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    // Ensure inputs render accurately in the PDF
+                    onclone: function (clonedDoc) {
+                        let inputs = clonedDoc.querySelectorAll('input');
+                        inputs.forEach(input => {
+                            input.setAttribute('value', input.value);
+                        });
+                    }
+                },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate and save the PDF
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 
