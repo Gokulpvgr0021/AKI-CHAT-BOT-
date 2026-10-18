@@ -2,7 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Forces perfect app-ratio fit, prevents pinch-zooming, and covers the mobile notch -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Tells mobile devices to treat this as a standalone native app -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e293b">
+    
+    <!-- Embedded Manifest for "Add to Home Screen" full-screen capability -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Magnum%20Attendance%22%2C%22short_name%22%3A%22Attendance%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%231e293b%22%7D'>
+
     <title>Magnum Clothing SKL - Daily Attendance</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -23,40 +34,46 @@
             font-family: 'Poppins', sans-serif; 
             background-color: var(--bg-color);
             color: var(--text-main);
+            /* Removed padding to ensure edge-to-edge fit */
             display: flex;
             justify-content: center;
-            padding: 40px 20px;
+            width: 100vw;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
             background-color: var(--surface);
             width: 100%;
-            max-width: 1050px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            overflow: hidden;
+            /* Removed max-width and border-radius so it acts like a true native screen */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        #print-area { background-color: var(--surface); }
+        #print-area { 
+            background-color: var(--surface); 
+            flex-grow: 1; /* Pushes action buttons to the bottom */
+        }
 
         .header {
             background-color: var(--primary);
             color: white;
-            padding: 30px;
+            padding: env(safe-area-inset-top, 20px) 20px 20px 20px; /* Adapts to mobile notches */
             text-align: center;
             border-bottom: 4px solid var(--accent);
         }
 
         .header h1 {
             font-weight: 600;
-            font-size: 24px;
+            font-size: 20px;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .header p {
             font-weight: 300;
-            font-size: 14px;
+            font-size: 13px;
             color: #cbd5e1;
             margin-top: 5px;
             letter-spacing: 2px;
@@ -67,41 +84,45 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
         }
 
         .date-container input[type="date"] {
-            padding: 5px 10px;
+            padding: 8px 12px;
             border: 1px solid var(--accent);
             border-radius: 4px;
             background-color: rgba(255,255,255,0.1);
             color: white;
             font-family: 'Poppins', sans-serif;
+            font-size: 14px;
             outline: none;
             color-scheme: dark;
         }
 
-        .content { padding: 30px; }
+        .content { 
+            padding: 15px; 
+            overflow-x: auto; /* Allows horizontal scrolling if table is too wide on small phones */
+        }
 
         table { 
             width: 100%; 
+            min-width: 600px; /* Prevents columns from crushing together on mobile */
             border-collapse: collapse; 
             margin-bottom: 20px;
         }
 
         th { 
             text-align: left; 
-            padding: 15px 10px; 
+            padding: 12px 10px; 
             font-weight: 600;
             color: var(--text-light);
             border-bottom: 2px solid var(--border);
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 1px;
         }
 
         td { 
-            padding: 10px; 
+            padding: 8px 10px; 
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
@@ -115,11 +136,12 @@
             font-size: 14px;
             color: var(--text-main);
             outline: none;
-            transition: border-color 0.3s ease;
             background: transparent;
+            /* Prevents iOS from zooming in on input focus */
+            font-size: 16px; 
         }
 
-        input[type="text"]:focus, input[type="time"]:focus, input[type="text"]:hover, input[type="time"]:hover {
+        input[type="text"]:focus, input[type="time"]:focus {
             border-color: var(--border);
             background: #f8fafc;
         }
@@ -127,20 +149,19 @@
         .total-hours {
             font-weight: 600;
             color: var(--primary);
-            font-size: 15px;
+            font-size: 14px;
             text-align: center;
         }
 
-        /* Status Badge Styling */
         .status-badge {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             text-align: center;
-            min-width: 85px;
+            min-width: 75px;
         }
 
         .absent { background-color: #fee2e2; color: #dc2626; }
@@ -148,19 +169,21 @@
 
         .action-buttons {
             display: flex;
-            gap: 15px;
-            padding: 0 30px 30px 30px;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--border);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         button {
             border: none;
-            padding: 12px 24px; 
+            padding: 14px; 
             border-radius: 6px;
             font-family: 'Poppins', sans-serif;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer; 
-            transition: background-color 0.3s ease, transform 0.1s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -173,15 +196,14 @@
             color: var(--primary);
             border: 1px solid var(--border);
         }
-        .btn-add:hover { background-color: #e2e8f0; }
+        .btn-add:active { background-color: #e2e8f0; }
 
         .btn-download {
             background-color: var(--primary);
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .btn-download:hover { background-color: #0f172a; }
-        button:active { transform: scale(0.98); }
+        .btn-download:active { background-color: #0f172a; transform: scale(0.98); }
 
     </style>
 </head>
@@ -190,8 +212,8 @@
     <div class="container">
         <div id="print-area">
             <div class="header">
-                <h1>Magnum Clothing SKL Warehouse</h1>
-                <p>Fabric Team • Daily Attendance & Hours</p>
+                <h1>Magnum Clothing SKL</h1>
+                <p>Fabric Team Attendance</p>
                 <div class="date-container">
                     <input type="date" id="attendanceDate">
                 </div>
@@ -209,7 +231,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Rows are injected by JavaScript -->
+                        <!-- Rows injected dynamically -->
                     </tbody>
                 </table>
             </div>
@@ -217,19 +239,17 @@
 
         <div class="action-buttons" id="action-buttons">
             <button class="btn-add" onclick="addBlankRow()">
-                <span>+</span> Add Extra Row
+                <span>+</span> Add Row
             </button>
             <button class="btn-download" onclick="generatePDF()">
-                Download as PDF
+                Download PDF
             </button>
         </div>
     </div>
 
     <script>
-        // Set today's date automatically
         document.getElementById('attendanceDate').valueAsDate = new Date();
 
-        // Editable list of your staff - change these names as needed
         const staffList = [
             "Gokul P",
             "Staff Member 2",
@@ -238,7 +258,6 @@
             "Staff Member 5"
         ];
 
-        // Initialize table on load
         window.onload = function() {
             const tbody = document.querySelector("#attendanceTable tbody");
             staffList.forEach(name => createRow(tbody, name));
@@ -250,7 +269,7 @@
                 <td><input type="text" value="${name}" placeholder="Enter name..."></td>
                 <td><input type="time" class="in-time" onchange="updateRow(this)"></td>
                 <td><input type="time" class="out-time" onchange="updateRow(this)"></td>
-                <td class="total-hours">0.00 hrs</td>
+                <td class="total-hours">0.00</td>
                 <td style="text-align: center;"><span class="status-badge absent">Absent</span></td>
             `;
             tbody.appendChild(tr);
@@ -268,32 +287,28 @@
             let statusBadge = row.querySelector('.status-badge');
             let totalCell = row.querySelector('.total-hours');
             
-            // Auto-mark Present/Absent
             if (inTime || outTime) {
                 statusBadge.innerText = "Present";
                 statusBadge.className = "status-badge present";
             } else {
                 statusBadge.innerText = "Absent";
                 statusBadge.className = "status-badge absent";
-                totalCell.innerText = "0.00 hrs";
+                totalCell.innerText = "0.00";
                 totalCell.style.color = "var(--primary)";
-                return; // Stop here if both are empty
+                return;
             }
 
-            // Calculate hours if both times are filled
             if (inTime && outTime) {
                 let inDate = new Date("01/01/2000 " + inTime);
                 let outDate = new Date("01/01/2000 " + outTime);
                 
-                if (outDate < inDate) {
-                    outDate.setDate(outDate.getDate() + 1); 
-                }
+                if (outDate < inDate) { outDate.setDate(outDate.getDate() + 1); }
                 
                 let diff = (outDate - inDate) / 1000 / 60 / 60; 
-                totalCell.innerText = diff.toFixed(2) + " hrs";
+                totalCell.innerText = diff.toFixed(2);
                 totalCell.style.color = "#d4af37"; 
             } else {
-                totalCell.innerText = "0.00 hrs";
+                totalCell.innerText = "0.00";
                 totalCell.style.color = "var(--primary)";
             }
         }
@@ -309,8 +324,8 @@
                 html2canvas:  { 
                     scale: 2, 
                     useCORS: true,
+                    windowWidth: 1000, 
                     onclone: function (clonedDoc) {
-                        // Hardcode input values so they appear correctly in PDF
                         let inputs = clonedDoc.querySelectorAll('input');
                         inputs.forEach(input => {
                             if (input.type === 'text' || input.type === 'time' || input.type === 'date') {
