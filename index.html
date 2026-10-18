@@ -2,453 +2,309 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- PWA Meta Tags for Native App Experience -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ffffff">
+    <title>Magnum SKL - Portal</title>
     
-    <!-- Embedded Manifest -->
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Magnum%20Attendance%22%2C%22short_name%22%3A%22Attendance%22%2C%22display%22%3A%22fullscreen%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%7D'>
-
-    <title>Magnum SKL - Fabric Team</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <style>
         :root {
-            --bg-main: #f4f7fa;
-            --surface: #ffffff;
-            --primary: #0f172a; /* Deep Corporate Navy */
-            --accent: #d4af37;  /* Premium Gold */
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --present-bg: #ecfdf5;
-            --present-text: #059669;
-            --absent-bg: #fef2f2;
-            --absent-text: #dc2626;
+            --bg-main: #f4f7fa; --surface: #ffffff; --primary: #0f172a; --accent: #d4af37;  
+            --text-dark: #1e293b; --text-muted: #64748b; --border: #e2e8f0;
+            --present-bg: #ecfdf5; --present-text: #059669; --absent-bg: #fef2f2; --absent-text: #dc2626;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Poppins', sans-serif;
-            -webkit-tap-highlight-color: transparent; /* Removes tap flash on mobile */
-        }
-
-        body { 
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden; /* Prevent body scroll, handle scroll in content area */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Action Bar (Not printed) */
-        .top-bar {
-            background-color: var(--primary);
-            padding: env(safe-area-inset-top, 15px) 20px 15px 20px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .fullscreen-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        /* Scrollable Main Area */
-        .app-content {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 100px; /* Space for bottom bar */
-        }
-
-        /* PDF Export Area */
-        #print-area {
-            background-color: var(--surface);
-            max-width: 1000px;
-            margin: 0 auto;
-            min-height: 100%;
-        }
-
-        .header {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 2px solid var(--bg-main);
-        }
-
-        .header h1 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        .header p {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 5px;
-            font-weight: 500;
-        }
-
-        .date-picker-wrapper {
-            margin-top: 20px;
-            display: inline-flex;
-            align-items: center;
-            background: var(--bg-main);
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .date-picker-wrapper input[type="date"] {
-            border: none;
-            background: transparent;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--primary);
-            outline: none;
-        }
-
-        /* Premium Table Layout */
-        .table-container { padding: 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg-main); color: var(--text-dark); }
         
-        table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0 10px; /* Space between rows */
-        }
+        .view { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .view.active { display: flex; }
 
-        th { 
-            text-align: left; 
-            padding: 0 15px 10px 15px; 
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
+        /* ================= ROLE SELECTION ================= */
+        #role-select-view { background: var(--primary); align-items: center; justify-content: center; text-align: center; color: white; }
+        .logo-title { font-size: 28px; font-weight: 700; color: var(--accent); margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
+        .role-btn { width: 250px; padding: 18px; margin: 15px; font-size: 16px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; transition: transform 0.2s; }
+        .role-btn:active { transform: scale(0.95); }
+        .btn-staff { background: var(--accent); color: var(--primary); }
+        .btn-admin { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
 
-        tr.staff-row {
-            background: var(--surface);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            border-radius: 12px;
-            transition: transform 0.2s;
-        }
+        /* ================= STAFF PORTAL ================= */
+        #staff-view { align-items: center; justify-content: center; padding: 20px; }
+        .staff-card { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        .staff-card h2 { color: var(--primary); margin-bottom: 20px; }
+        select { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--border); font-size: 16px; font-family: 'Poppins'; margin-bottom: 30px; outline: none; background: var(--bg-main); }
+        .big-punch-btn { width: 100%; padding: 20px; font-size: 18px; font-weight: 700; border-radius: 15px; border: none; color: white; margin-bottom: 15px; cursor: pointer; transition: transform 0.1s; }
+        .big-punch-btn:active { transform: scale(0.95); }
+        .bg-in { background: #10b981; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); }
+        .bg-out { background: #f59e0b; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); }
+        .big-punch-btn:disabled { opacity: 0.5; pointer-events: none; box-shadow: none; }
 
-        td { 
-            padding: 15px; 
-            background: var(--surface);
-        }
-
-        /* Rounded corners for table rows */
-        tr.staff-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border: 1px solid var(--border); border-right: none; }
-        tr.staff-row td:nth-child(2) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        tr.staff-row td:nth-child(3) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        tr.staff-row td:nth-child(4) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        tr.staff-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; border: 1px solid var(--border); border-left: none; }
-
-        input[type="text"], input[type="time"] { 
-            width: 100%;
-            padding: 12px; 
-            border: 1px solid transparent;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-dark);
-            outline: none;
-            background: var(--bg-main);
-            transition: all 0.3s;
-        }
-
-        input[type="text"]:focus, input[type="time"]:focus {
-            background: var(--surface);
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
-        }
-
-        .total-hours {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--primary);
-            text-align: center;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            text-align: center;
-            width: 100px;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-        }
-
+        /* ================= ADMIN DASHBOARD ================= */
+        .top-bar { background-color: var(--primary); padding: env(safe-area-inset-top, 15px) 20px 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .live-indicator { display: flex; align-items: center; gap: 8px; color: #10b981; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .pulse { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse-anim 1.5s infinite; }
+        @keyframes pulse-anim { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .app-content { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        #print-area { background-color: var(--surface); max-width: 1000px; margin: 0 auto; min-height: 100%; }
+        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid var(--bg-main); }
+        .header h1 { font-size: 22px; font-weight: 700; color: var(--primary); text-transform: uppercase; }
+        .date-picker-wrapper { margin-top: 15px; background: var(--bg-main); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); display: inline-block; }
+        .date-picker-wrapper input { border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--primary); outline: none; }
+        
+        .table-container { padding: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; min-width: 700px; }
+        th { text-align: left; padding: 0 10px 10px 10px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        tr.staff-row { background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-radius: 12px; }
+        td { padding: 15px 10px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }
+        tr.staff-row td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; font-weight: 600; color: var(--primary); }
+        tr.staff-row td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; text-align: center; }
+        
+        .status-badge { display: inline-block; padding: 8px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; text-transform: uppercase; width: 85px; }
         .absent { background-color: var(--absent-bg); color: var(--absent-text); }
-        .present { background-color: var(--present-bg); color: var(--present-text); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15); }
-
-        /* Fixed Bottom Action Bar */
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--surface);
-            padding: 15px 20px calc(env(safe-area-inset-bottom, 15px) + 15px) 20px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .bottom-bar-inner {
-            max-width: 1000px;
-            width: 100%;
-            display: flex;
-            gap: 15px;
-        }
-
-        button {
-            flex: 1;
-            border: none;
-            padding: 16px; 
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: transform 0.1s;
-        }
-
-        .btn-add { 
-            background-color: var(--bg-main);
-            color: var(--primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-download {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
-        }
-
-        button:active { transform: scale(0.96); }
-
-        /* Hide elements during PDF generation */
-        .pdf-mode .top-bar, .pdf-mode .bottom-bar { display: none !important; }
-        .pdf-mode tr.staff-row { box-shadow: none; border: 1px solid var(--border); }
+        .present { background-color: var(--present-bg); color: var(--present-text); }
         
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); padding: 15px 20px calc(env(safe-area-inset-bottom, 15px) + 15px) 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); display: flex; justify-content: center; }
+        .btn-download { width: 100%; max-width: 1000px; border: none; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background-color: var(--primary); color: white; }
+        
+        .pdf-mode .top-bar, .pdf-mode .bottom-bar { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Fullscreen Toggle Bar -->
-    <div class="top-bar">
-        <button class="fullscreen-btn" onclick="toggleFullScreen()" id="fsBtn">
-            ⛶ Full Screen
-        </button>
+    <!-- 1. ROLE SELECTION SCREEN -->
+    <div id="role-select-view" class="view active">
+        <div class="logo-title">Magnum SKL</div>
+        <p style="color: #cbd5e1; margin-bottom: 40px;">Select Your Portal</p>
+        <button class="role-btn btn-staff" onclick="openStaff()">📱 I am Staff</button>
+        <button class="role-btn btn-admin" onclick="openAdmin()">🔒 I am Admin</button>
     </div>
 
-    <!-- Main Scrollable Application -->
-    <div class="app-content" id="appContent">
-        <div id="print-area">
-            <div class="header">
-                <h1>Magnum Clothing SKL</h1>
-                <p>Fabric Team • Daily Attendance Log</p>
-                <div class="date-picker-wrapper">
-                    <input type="date" id="attendanceDate">
-                </div>
-            </div>
+    <!-- 2. STAFF APP SCREEN -->
+    <div id="staff-view" class="view">
+        <div class="staff-card">
+            <h2>Welcome to Work</h2>
+            <select id="staffNameSelect" onchange="loadStaffState()"></select>
             
-            <div class="table-container">
-                <table id="attendanceTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 28%;">Staff Member</th>
-                            <th style="width: 20%;">In-Time</th>
-                            <th style="width: 20%;">Out-Time</th>
-                            <th style="text-align: center; width: 12%;">Hours</th>
-                            <th style="text-align: center; width: 20%;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows injected dynamically -->
-                    </tbody>
-                </table>
-            </div>
+            <button id="btnIn" class="big-punch-btn bg-in" onclick="staffPunch('in')">⚡ PUNCH IN</button>
+            <button id="btnOut" class="big-punch-btn bg-out" onclick="staffPunch('out')">⚡ PUNCH OUT</button>
+            
+            <p style="margin-top: 20px; font-size: 12px; color: var(--text-muted); cursor: pointer;" onclick="logout()">← Back to Start</p>
         </div>
     </div>
 
-    <!-- Fixed Bottom Controls -->
-    <div class="bottom-bar">
-        <div class="bottom-bar-inner">
-            <button class="btn-add" onclick="addBlankRow()">
-                + Add Staff
-            </button>
-            <button class="btn-download" onclick="generatePDF()">
-                ⭳ Download PDF
-            </button>
+    <!-- 3. ADMIN APP SCREEN -->
+    <div id="admin-view" class="view">
+        <div class="top-bar">
+            <div class="live-indicator"><div class="pulse"></div> Live Sync</div>
+            <button style="background: transparent; color: white; border: none; font-size: 12px; cursor: pointer;" onclick="logout()">Logout</button>
+        </div>
+        <div class="app-content">
+            <div id="print-area">
+                <div class="header">
+                    <h1>Admin Dashboard</h1>
+                    <p>Fabric Team • Live Attendance</p>
+                    <div class="date-picker-wrapper">
+                        <input type="date" id="attendanceDate" onchange="loadAdminData()">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Staff Member</th>
+                                <th style="width: 20%;">In-Time</th>
+                                <th style="width: 20%;">Out-Time</th>
+                                <th style="text-align: center; width: 15%;">Hours</th>
+                                <th style="text-align: center; width: 20%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <button class="btn-download" onclick="generatePDF()">⭳ Download PDF Report</button>
         </div>
     </div>
 
     <script>
-        // Set today's date
-        document.getElementById('attendanceDate').valueAsDate = new Date();
-
-        // Premium Pre-loaded Staff List
-        const staffList = [
-            "Gokul P",
-            "Staff Member 2",
-            "Staff Member 3",
-            "Staff Member 4",
-            "Staff Member 5"
-        ];
-
-        window.onload = function() {
-            const tbody = document.querySelector("#attendanceTable tbody");
-            staffList.forEach(name => createRow(tbody, name));
+        // FIREBASE CONFIGURATION (Added your credentials)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCd3HHP3hHLBnEkqOvK8jgBAGE99_mj_6k",
+            authDomain: "magnum-clothing-attendance.firebaseapp.com",
+            projectId: "magnum-clothing-attendance",
+            storageBucket: "magnum-clothing-attendance.firebasestorage.app",
+            messagingSenderId: "762113661744",
+            appId: "1:762113661744:web:f9edd4ca012fb0c98106f5",
+            measurementId: "G-VBDJKC0XBM"
         };
 
-        function createRow(tbody, name = "") {
-            const tr = document.createElement("tr");
-            tr.className = "staff-row";
-            tr.innerHTML = `
-                <td><input type="text" value="${name}" placeholder="Enter name..."></td>
-                <td><input type="time" class="in-time" onchange="updateRow(this)"></td>
-                <td><input type="time" class="out-time" onchange="updateRow(this)"></td>
-                <td class="total-hours">0.00</td>
-                <td style="text-align: center;"><span class="status-badge absent">Absent</span></td>
-            `;
-            tbody.appendChild(tr);
+        // Initialize Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch(e) {
+            console.error("Firebase not configured");
         }
 
-        function addBlankRow() {
-            const tbody = document.querySelector("#attendanceTable tbody");
-            createRow(tbody, "");
-            // Auto scroll to bottom when adding new row
-            document.getElementById('appContent').scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // UNGA STAFF LIST (Edit this list freely)
+        const staffList = ["Gokul P", "Karthik", "Ramesh", "Suresh", "Manoj"];
+
+        // Utils
+        function getLocalDate() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function getLocalTime() {
+            const d = new Date();
+            return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+        function logout() { switchView('role-select-view'); }
+
+        // ================= ADMIN LOGIC =================
+        function openAdmin() {
+            const pin = prompt("Enter Admin Password (PIN):");
+            if (pin === "1234") { // MACHI, PASSWORD INGA MAATHIKALAM
+                switchView('admin-view');
+                document.getElementById('attendanceDate').value = getLocalDate();
+                initAdminTable();
+                loadAdminData();
+            } else {
+                alert("Wrong Password!");
+            }
         }
 
-        function updateRow(element) {
-            let row = element.closest('tr');
-            let inTime = row.querySelector('.in-time').value;
-            let outTime = row.querySelector('.out-time').value;
-            let statusBadge = row.querySelector('.status-badge');
-            let totalCell = row.querySelector('.total-hours');
+        function initAdminTable() {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            staffList.forEach((name, index) => {
+                tbody.innerHTML += `
+                    <tr class="staff-row" id="row-${index}">
+                        <td>${name}</td>
+                        <td id="in-${index}">--:--</td>
+                        <td id="out-${index}">--:--</td>
+                        <td style="text-align:center; font-weight:700; color:var(--accent);" id="hrs-${index}">0.00</td>
+                        <td><span class="status-badge absent" id="status-${index}">Absent</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function loadAdminData() {
+            if(!db) return alert("Admin hasn't added Firebase config yet!");
+            const date = document.getElementById('attendanceDate').value;
             
-            // Instantly update badge
-            if (inTime || outTime) {
-                statusBadge.innerText = "Present";
-                statusBadge.className = "status-badge present";
-            } else {
-                statusBadge.innerText = "Absent";
-                statusBadge.className = "status-badge absent";
-                totalCell.innerText = "0.00";
-                totalCell.style.color = "var(--primary)";
-                return;
-            }
+            db.ref(`magnum_attendance/${date}`).on('value', snap => {
+                const data = snap.val() || {};
+                
+                staffList.forEach((name, index) => {
+                    const rowData = data[name] || {};
+                    const inTime = rowData.in || "";
+                    const outTime = rowData.out || "";
+                    
+                    document.getElementById(`in-${index}`).innerText = inTime || "--:--";
+                    document.getElementById(`out-${index}`).innerText = outTime || "--:--";
+                    
+                    const statusBadge = document.getElementById(`status-${index}`);
+                    const hrs = document.getElementById(`hrs-${index}`);
 
-            // Calculate exact hours
-            if (inTime && outTime) {
-                let inDate = new Date("01/01/2000 " + inTime);
-                let outDate = new Date("01/01/2000 " + outTime);
-                
-                if (outDate < inDate) { outDate.setDate(outDate.getDate() + 1); }
-                
-                let diff = (outDate - inDate) / 1000 / 60 / 60; 
-                totalCell.innerText = diff.toFixed(2);
-                totalCell.style.color = "var(--accent)"; 
-            } else {
-                totalCell.innerText = "0.00";
-                totalCell.style.color = "var(--primary)";
-            }
+                    if (inTime || outTime) {
+                        statusBadge.innerText = "Present";
+                        statusBadge.className = "status-badge present";
+                    } else {
+                        statusBadge.innerText = "Absent";
+                        statusBadge.className = "status-badge absent";
+                        hrs.innerText = "0.00";
+                    }
+
+                    if (inTime && outTime) {
+                        let dIn = new Date("01/01/2000 " + inTime);
+                        let dOut = new Date("01/01/2000 " + outTime);
+                        if (dOut < dIn) dOut.setDate(dOut.getDate() + 1); 
+                        hrs.innerText = ((dOut - dIn) / 1000 / 60 / 60).toFixed(2);
+                    }
+                });
+            });
         }
 
-        // Fullscreen API Logic
-        function toggleFullScreen() {
-            let elem = document.documentElement;
-            let fsBtn = document.getElementById("fsBtn");
-
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) { elem.requestFullscreen(); } 
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
-                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
-                fsBtn.innerText = "✖ Exit Full Screen";
-                fsBtn.style.color = "#ef4444";
-                fsBtn.style.borderColor = "rgba(239, 68, 68, 0.3)";
-            } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); } 
-                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-                fsBtn.innerText = "⛶ Full Screen";
-                fsBtn.style.color = "var(--accent)";
-                fsBtn.style.borderColor = "rgba(212, 175, 55, 0.3)";
-            }
-        }
-
-        // High-Quality PDF Generation
         function generatePDF() {
-            document.body.classList.add('pdf-mode'); // Hides unnecessary UI for clean print
-            
+            document.body.classList.add('pdf-mode'); 
             const element = document.getElementById('print-area');
             const dateValue = document.getElementById('attendanceDate').value;
             
             const opt = {
-                margin:       [0.5, 0.5, 0.5, 0.5],
-                filename:     `Magnum_Fabric_Team_${dateValue}.pdf`,
-                image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true,
-                    windowWidth: 1000, 
-                    onclone: function (clonedDoc) {
-                        let inputs = clonedDoc.querySelectorAll('input');
-                        inputs.forEach(input => {
-                            if (input.type === 'text' || input.type === 'time' || input.type === 'date') {
-                                // Convert inputs to static text in the PDF so they look perfectly clean
-                                let span = clonedDoc.createElement('span');
-                                span.innerText = input.value || '--';
-                                span.style.fontSize = '14px';
-                                span.style.fontWeight = '500';
-                                input.parentNode.replaceChild(span, input);
-                            }
-                        });
-                    }
-                },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `Magnum_Attendance_${dateValue}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
+            html2pdf().set(opt).from(element).save().then(() => document.body.classList.remove('pdf-mode'));
+        }
 
-            // Generate, download, and then restore UI
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.body.classList.remove('pdf-mode');
+        // ================= STAFF LOGIC =================
+        function openStaff() {
+            switchView('staff-view');
+            const sel = document.getElementById('staffNameSelect');
+            sel.innerHTML = '<option value="" disabled selected>Select Your Name...</option>';
+            staffList.forEach(name => {
+                sel.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+            document.getElementById('btnIn').disabled = true;
+            document.getElementById('btnOut').disabled = true;
+        }
+
+        function loadStaffState() {
+            if(!db) return alert("Firebase Config Missing!");
+            const name = document.getElementById('staffNameSelect').value;
+            const today = getLocalDate();
+            
+            db.ref(`magnum_attendance/${today}/${name}`).on('value', snap => {
+                const data = snap.val() || {};
+                const inBtn = document.getElementById('btnIn');
+                const outBtn = document.getElementById('btnOut');
+                
+                if (data.in) {
+                    inBtn.innerText = "✅ IN at " + data.in;
+                    inBtn.disabled = true;
+                } else {
+                    inBtn.innerText = "⚡ PUNCH IN";
+                    inBtn.disabled = false;
+                }
+
+                if (data.out) {
+                    outBtn.innerText = "✅ OUT at " + data.out;
+                    outBtn.disabled = true;
+                } else {
+                    outBtn.innerText = "⚡ PUNCH OUT";
+                    // Only allow punch out if they have punched in
+                    outBtn.disabled = !data.in; 
+                }
+            });
+        }
+
+        function staffPunch(type) {
+            const name = document.getElementById('staffNameSelect').value;
+            if(!name) return alert("Select your name first!");
+            const time = getLocalTime();
+            const today = getLocalDate();
+            
+            db.ref(`magnum_attendance/${today}/${name}`).update({
+                [type]: time
             });
         }
     </script>
-
 </body>
 </html>
