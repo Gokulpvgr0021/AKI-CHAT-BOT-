@@ -2,231 +2,297 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Forces perfect app-ratio fit, prevents pinch-zooming, and covers the mobile notch -->
+    <!-- PWA Meta Tags for Native App Experience -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- Tells mobile devices to treat this as a standalone native app -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#ffffff">
     
-    <!-- Embedded Manifest for "Add to Home Screen" full-screen capability -->
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Magnum%20Attendance%22%2C%22short_name%22%3A%22Attendance%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%231e293b%22%7D'>
+    <!-- Embedded Manifest -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Magnum%20Attendance%22%2C%22short_name%22%3A%22Attendance%22%2C%22display%22%3A%22fullscreen%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%7D'>
 
-    <title>Magnum Clothing SKL - Daily Attendance</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Magnum SKL - Fabric Team</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         :root {
-            --primary: #1e293b; 
-            --accent: #d4af37; 
-            --bg-color: #f8fafc;
+            --bg-main: #f4f7fa;
             --surface: #ffffff;
-            --text-main: #334155;
-            --text-light: #94a3b8;
+            --primary: #0f172a; /* Deep Corporate Navy */
+            --accent: #d4af37;  /* Premium Gold */
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
             --border: #e2e8f0;
+            --present-bg: #ecfdf5;
+            --present-text: #059669;
+            --absent-bg: #fef2f2;
+            --absent-text: #dc2626;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Removes tap flash on mobile */
+        }
 
         body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            /* Removed padding to ensure edge-to-edge fit */
-            display: flex;
-            justify-content: center;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
             width: 100vw;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            background-color: var(--surface);
-            width: 100%;
-            /* Removed max-width and border-radius so it acts like a true native screen */
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden; /* Prevent body scroll, handle scroll in content area */
             display: flex;
             flex-direction: column;
         }
 
-        #print-area { 
-            background-color: var(--surface); 
-            flex-grow: 1; /* Pushes action buttons to the bottom */
-        }
-
-        .header {
+        /* Top Action Bar (Not printed) */
+        .top-bar {
             background-color: var(--primary);
-            color: white;
-            padding: env(safe-area-inset-top, 20px) 20px 20px 20px; /* Adapts to mobile notches */
-            text-align: center;
-            border-bottom: 4px solid var(--accent);
-        }
-
-        .header h1 {
-            font-weight: 600;
-            font-size: 20px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header p {
-            font-weight: 300;
-            font-size: 13px;
-            color: #cbd5e1;
-            margin-top: 5px;
-            letter-spacing: 2px;
-        }
-
-        .date-container {
-            margin-top: 15px;
+            padding: env(safe-area-inset-top, 15px) 20px 15px 20px;
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
             align-items: center;
         }
 
-        .date-container input[type="date"] {
-            padding: 8px 12px;
-            border: 1px solid var(--accent);
-            border-radius: 4px;
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-            font-family: 'Poppins', sans-serif;
+        .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        /* Scrollable Main Area */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 100px; /* Space for bottom bar */
+        }
+
+        /* PDF Export Area */
+        #print-area {
+            background-color: var(--surface);
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 100%;
+        }
+
+        .header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--bg-main);
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .header p {
             font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .date-picker-wrapper {
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .date-picker-wrapper input[type="date"] {
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
             outline: none;
-            color-scheme: dark;
         }
 
-        .content { 
-            padding: 15px; 
-            overflow-x: auto; /* Allows horizontal scrolling if table is too wide on small phones */
-        }
-
+        /* Premium Table Layout */
+        .table-container { padding: 20px; }
+        
         table { 
             width: 100%; 
-            min-width: 600px; /* Prevents columns from crushing together on mobile */
-            border-collapse: collapse; 
-            margin-bottom: 20px;
+            border-collapse: separate; 
+            border-spacing: 0 10px; /* Space between rows */
         }
 
         th { 
             text-align: left; 
-            padding: 12px 10px; 
-            font-weight: 600;
-            color: var(--text-light);
-            border-bottom: 2px solid var(--border);
+            padding: 0 15px 10px 15px; 
+            font-size: 12px;
+            color: var(--text-muted);
             text-transform: uppercase;
-            font-size: 11px;
             letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        tr.staff-row {
+            background: var(--surface);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border-radius: 12px;
+            transition: transform 0.2s;
         }
 
         td { 
-            padding: 8px 10px; 
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
+            padding: 15px; 
+            background: var(--surface);
         }
+
+        /* Rounded corners for table rows */
+        tr.staff-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border: 1px solid var(--border); border-right: none; }
+        tr.staff-row td:nth-child(2) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        tr.staff-row td:nth-child(3) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        tr.staff-row td:nth-child(4) { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        tr.staff-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; border: 1px solid var(--border); border-left: none; }
 
         input[type="text"], input[type="time"] { 
             width: 100%;
-            padding: 10px; 
+            padding: 12px; 
             border: 1px solid transparent;
-            border-radius: 6px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
             outline: none;
-            background: transparent;
-            /* Prevents iOS from zooming in on input focus */
-            font-size: 16px; 
+            background: var(--bg-main);
+            transition: all 0.3s;
         }
 
         input[type="text"]:focus, input[type="time"]:focus {
-            border-color: var(--border);
-            background: #f8fafc;
+            background: var(--surface);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
         }
 
         .total-hours {
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 16px;
             color: var(--primary);
-            font-size: 14px;
             text-align: center;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
             text-align: center;
-            min-width: 75px;
+            width: 100px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
         }
 
-        .absent { background-color: #fee2e2; color: #dc2626; }
-        .present { background-color: #dcfce7; color: #16a34a; }
+        .absent { background-color: var(--absent-bg); color: var(--absent-text); }
+        .present { background-color: var(--present-bg); color: var(--present-text); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15); }
 
-        .action-buttons {
+        /* Fixed Bottom Action Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface);
+            padding: 15px 20px calc(env(safe-area-inset-bottom, 15px) + 15px) 20px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
             display: flex;
-            gap: 10px;
-            padding: 15px;
-            background-color: var(--bg-color);
-            border-top: 1px solid var(--border);
-            padding-bottom: env(safe-area-inset-bottom, 20px);
+            gap: 15px;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .bottom-bar-inner {
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+            gap: 15px;
         }
 
         button {
+            flex: 1;
             border: none;
-            padding: 14px; 
-            border-radius: 6px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
+            padding: 16px; 
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer; 
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            flex: 1;
+            transition: transform 0.1s;
         }
 
         .btn-add { 
-            background-color: #f1f5f9;
+            background-color: var(--bg-main);
             color: var(--primary);
             border: 1px solid var(--border);
         }
-        .btn-add:active { background-color: #e2e8f0; }
 
         .btn-download {
             background-color: var(--primary);
             color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
         }
-        .btn-download:active { background-color: #0f172a; transform: scale(0.98); }
 
+        button:active { transform: scale(0.96); }
+
+        /* Hide elements during PDF generation */
+        .pdf-mode .top-bar, .pdf-mode .bottom-bar { display: none !important; }
+        .pdf-mode tr.staff-row { box-shadow: none; border: 1px solid var(--border); }
+        
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <!-- Fullscreen Toggle Bar -->
+    <div class="top-bar">
+        <button class="fullscreen-btn" onclick="toggleFullScreen()" id="fsBtn">
+            ⛶ Full Screen
+        </button>
+    </div>
+
+    <!-- Main Scrollable Application -->
+    <div class="app-content" id="appContent">
         <div id="print-area">
             <div class="header">
                 <h1>Magnum Clothing SKL</h1>
-                <p>Fabric Team Attendance</p>
-                <div class="date-container">
+                <p>Fabric Team • Daily Attendance Log</p>
+                <div class="date-picker-wrapper">
                     <input type="date" id="attendanceDate">
                 </div>
             </div>
             
-            <div class="content">
+            <div class="table-container">
                 <table id="attendanceTable">
                     <thead>
                         <tr>
-                            <th style="width: 25%;">Staff Member</th>
+                            <th style="width: 28%;">Staff Member</th>
                             <th style="width: 20%;">In-Time</th>
                             <th style="width: 20%;">Out-Time</th>
-                            <th style="text-align: center; width: 15%;">Hours</th>
+                            <th style="text-align: center; width: 12%;">Hours</th>
                             <th style="text-align: center; width: 20%;">Status</th>
                         </tr>
                     </thead>
@@ -236,20 +302,25 @@
                 </table>
             </div>
         </div>
+    </div>
 
-        <div class="action-buttons" id="action-buttons">
+    <!-- Fixed Bottom Controls -->
+    <div class="bottom-bar">
+        <div class="bottom-bar-inner">
             <button class="btn-add" onclick="addBlankRow()">
-                <span>+</span> Add Row
+                + Add Staff
             </button>
             <button class="btn-download" onclick="generatePDF()">
-                Download PDF
+                ⭳ Download PDF
             </button>
         </div>
     </div>
 
     <script>
+        // Set today's date
         document.getElementById('attendanceDate').valueAsDate = new Date();
 
+        // Premium Pre-loaded Staff List
         const staffList = [
             "Gokul P",
             "Staff Member 2",
@@ -265,6 +336,7 @@
 
         function createRow(tbody, name = "") {
             const tr = document.createElement("tr");
+            tr.className = "staff-row";
             tr.innerHTML = `
                 <td><input type="text" value="${name}" placeholder="Enter name..."></td>
                 <td><input type="time" class="in-time" onchange="updateRow(this)"></td>
@@ -278,6 +350,8 @@
         function addBlankRow() {
             const tbody = document.querySelector("#attendanceTable tbody");
             createRow(tbody, "");
+            // Auto scroll to bottom when adding new row
+            document.getElementById('appContent').scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         function updateRow(element) {
@@ -287,6 +361,7 @@
             let statusBadge = row.querySelector('.status-badge');
             let totalCell = row.querySelector('.total-hours');
             
+            // Instantly update badge
             if (inTime || outTime) {
                 statusBadge.innerText = "Present";
                 statusBadge.className = "status-badge present";
@@ -298,6 +373,7 @@
                 return;
             }
 
+            // Calculate exact hours
             if (inTime && outTime) {
                 let inDate = new Date("01/01/2000 " + inTime);
                 let outDate = new Date("01/01/2000 " + outTime);
@@ -306,20 +382,45 @@
                 
                 let diff = (outDate - inDate) / 1000 / 60 / 60; 
                 totalCell.innerText = diff.toFixed(2);
-                totalCell.style.color = "#d4af37"; 
+                totalCell.style.color = "var(--accent)"; 
             } else {
                 totalCell.innerText = "0.00";
                 totalCell.style.color = "var(--primary)";
             }
         }
 
+        // Fullscreen API Logic
+        function toggleFullScreen() {
+            let elem = document.documentElement;
+            let fsBtn = document.getElementById("fsBtn");
+
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
+                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
+                fsBtn.innerText = "✖ Exit Full Screen";
+                fsBtn.style.color = "#ef4444";
+                fsBtn.style.borderColor = "rgba(239, 68, 68, 0.3)";
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); } 
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+                fsBtn.innerText = "⛶ Full Screen";
+                fsBtn.style.color = "var(--accent)";
+                fsBtn.style.borderColor = "rgba(212, 175, 55, 0.3)";
+            }
+        }
+
+        // High-Quality PDF Generation
         function generatePDF() {
+            document.body.classList.add('pdf-mode'); // Hides unnecessary UI for clean print
+            
             const element = document.getElementById('print-area');
             const dateValue = document.getElementById('attendanceDate').value;
             
             const opt = {
-                margin:       [0, 0, 0, 0],
-                filename:     `Magnum_Fabric_Attendance_${dateValue}.pdf`,
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     `Magnum_Fabric_Team_${dateValue}.pdf`,
                 image:        { type: 'jpeg', quality: 1.0 },
                 html2canvas:  { 
                     scale: 2, 
@@ -329,7 +430,12 @@
                         let inputs = clonedDoc.querySelectorAll('input');
                         inputs.forEach(input => {
                             if (input.type === 'text' || input.type === 'time' || input.type === 'date') {
-                                input.setAttribute('value', input.value);
+                                // Convert inputs to static text in the PDF so they look perfectly clean
+                                let span = clonedDoc.createElement('span');
+                                span.innerText = input.value || '--';
+                                span.style.fontSize = '14px';
+                                span.style.fontWeight = '500';
+                                input.parentNode.replaceChild(span, input);
                             }
                         });
                     }
@@ -337,7 +443,10 @@
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save();
+            // Generate, download, and then restore UI
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.body.classList.remove('pdf-mode');
+            });
         }
     </script>
 
