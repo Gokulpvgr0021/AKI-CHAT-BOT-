@@ -3,40 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Attendance Tracker</title>
+    <title>Magnum Clothing SKL - Premium Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        input[type="text"], input[type="time"] { padding: 5px; width: 90%; }
-        button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
+        :root {
+            --primary: #1e293b; /* Deep slate */
+            --accent: #d4af37; /* Premium Gold */
+            --bg-color: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #334155;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background-color: var(--surface);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 24px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-weight: 300;
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-top: 5px;
+            letter-spacing: 2px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 20px;
+        }
+
+        th { 
+            text-align: left; 
+            padding: 15px; 
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        td { 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="text"], input[type="time"] { 
+            width: 100%;
+            padding: 10px 15px; 
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="time"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .total-hours {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .btn-add { 
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px; 
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer; 
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background-color: #0f172a;
+        }
+
+        .btn-add:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
 
-    <h2>Daily Staff Attendance</h2>
-    
-    <table id="attendanceTable">
-        <thead>
-            <tr>
-                <th>Staff Name</th>
-                <th>In-Time</th>
-                <th>Out-Time</th>
-                <th>Total Hours</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="text" placeholder="Enter Name"></td>
-                <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
-                <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
-                <td class="total-hours">0.00 hrs</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container">
+        <div class="header">
+            <h1>Magnum Clothing SKL Warehouse</h1>
+            <p>Fabric Team • Daily Attendance & Hours</p>
+        </div>
+        
+        <div class="content">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Staff Member</th>
+                        <th>In-Time</th>
+                        <th>Out-Time</th>
+                        <th>Total Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="Enter full name..."></td>
+                        <td><input type="time" class="in-time" onchange="calculateHours(this)"></td>
+                        <td><input type="time" class="out-time" onchange="calculateHours(this)"></td>
+                        <td class="total-hours">0.00 hrs</td>
+                    </tr>
+                </tbody>
+            </table>
 
-    <button onclick="addRow()">+ Add Staff Member</button>
+            <button class="btn-add" onclick="addRow()">
+                <span>+</span> Add New Record
+            </button>
+        </div>
+    </div>
 
     <script>
         function calculateHours(element) {
@@ -53,8 +192,12 @@
                     outDate.setDate(outDate.getDate() + 1); 
                 }
                 
-                let diff = (outDate - inDate) / 1000 / 60 / 60; // convert milliseconds to hours
-                row.querySelector('.total-hours').innerText = diff.toFixed(2) + " hrs";
+                let diff = (outDate - inDate) / 1000 / 60 / 60; 
+                
+                // Add a subtle color highlight if hours are calculated successfully
+                let totalCell = row.querySelector('.total-hours');
+                totalCell.innerText = diff.toFixed(2) + " hrs";
+                totalCell.style.color = "#d4af37"; 
             }
         }
 
@@ -62,10 +205,12 @@
             let table = document.getElementById("attendanceTable").getElementsByTagName('tbody')[0];
             let newRow = table.rows[0].cloneNode(true);
             
-            // Clear the inputs in the cloned row
             let inputs = newRow.querySelectorAll('input');
             inputs.forEach(input => input.value = '');
-            newRow.querySelector('.total-hours').innerText = '0.00 hrs';
+            
+            let totalCell = newRow.querySelector('.total-hours');
+            totalCell.innerText = '0.00 hrs';
+            totalCell.style.color = "var(--primary)";
             
             table.appendChild(newRow);
         }
