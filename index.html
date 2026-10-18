@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Magnum SKL - Portal</title>
+    <title>Magnum SKL - Premium Portal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <!-- Firebase Libraries -->
@@ -13,66 +13,115 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
+        /* ================= PREMIUM ROYAL DARK THEME ================= */
         :root {
-            --bg-main: #f4f7fa; --surface: #ffffff; --primary: #0f172a; --accent: #d4af37;  
-            --text-dark: #1e293b; --text-muted: #64748b; --border: #e2e8f0;
-            --present-bg: #ecfdf5; --present-text: #059669; --absent-bg: #fef2f2; --absent-text: #dc2626;
+            --bg-dark: #0a0a0a;
+            --surface: #141414;
+            --surface-light: #1f1f1f;
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border: #333333;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg-main); color: var(--text-dark); }
+        body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg-dark); color: var(--text-main); }
+        
+        h1, h2, .logo-title { font-family: 'Playfair Display', serif; }
         
         .view { display: none; width: 100%; height: 100%; flex-direction: column; }
         .view.active { display: flex; }
 
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
         /* ================= ROLE SELECTION ================= */
-        #role-select-view { background: var(--primary); align-items: center; justify-content: center; text-align: center; color: white; }
-        .logo-title { font-size: 28px; font-weight: 700; color: var(--accent); margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
-        .role-btn { width: 250px; padding: 18px; margin: 15px; font-size: 16px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; transition: transform 0.2s; }
-        .role-btn:active { transform: scale(0.95); }
-        .btn-staff { background: var(--accent); color: var(--primary); }
-        .btn-admin { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+        #role-select-view { align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); }
+        .logo-title { font-size: 38px; color: var(--gold); margin-bottom: 5px; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+        .role-btn { width: 280px; padding: 20px; margin: 15px; font-size: 16px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .role-btn:active { transform: scale(0.96); }
+        .btn-staff { background: linear-gradient(135deg, var(--gold), #aa8c2c); color: #000; box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2); }
+        .btn-admin { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
 
         /* ================= STAFF PORTAL ================= */
-        #staff-view { align-items: center; justify-content: center; padding: 20px; }
-        .staff-card { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
-        .staff-card h2 { color: var(--primary); margin-bottom: 20px; }
-        select { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--border); font-size: 16px; font-family: 'Poppins'; margin-bottom: 30px; outline: none; background: var(--bg-main); }
-        .big-punch-btn { width: 100%; padding: 20px; font-size: 18px; font-weight: 700; border-radius: 15px; border: none; color: white; margin-bottom: 15px; cursor: pointer; transition: transform 0.1s; }
-        .big-punch-btn:active { transform: scale(0.95); }
-        .bg-in { background: #10b981; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); }
-        .bg-out { background: #f59e0b; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2); }
-        .big-punch-btn:disabled { opacity: 0.5; pointer-events: none; box-shadow: none; }
+        #staff-view { align-items: center; justify-content: center; padding: 20px; background: url('https://www.transparenttextures.com/patterns/stardust.png'), var(--bg-dark); }
+        .staff-card { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); padding: 40px 30px; border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; }
+        .staff-card h2 { color: var(--gold-light); margin-bottom: 25px; font-size: 26px; }
+        
+        select { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid var(--border); font-size: 16px; font-family: 'Poppins'; margin-bottom: 30px; outline: none; background: var(--surface-light); color: white; appearance: none; }
+        select:focus { border-color: var(--gold); }
+        
+        .big-punch-btn { width: 100%; padding: 22px; font-size: 16px; font-weight: 600; letter-spacing: 1px; border-radius: 16px; border: none; color: #000; margin-bottom: 15px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        .big-punch-btn:active { transform: scale(0.96); }
+        .bg-in { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2); color: white; }
+        .bg-out { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2); color: white; }
+        .big-punch-btn:disabled { background: var(--border) !important; color: var(--text-muted) !important; box-shadow: none !important; pointer-events: none; }
 
         /* ================= ADMIN DASHBOARD ================= */
-        .top-bar { background-color: var(--primary); padding: env(safe-area-inset-top, 15px) 20px 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .live-indicator { display: flex; align-items: center; gap: 8px; color: #10b981; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-        .pulse { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse-anim 1.5s infinite; }
-        @keyframes pulse-anim { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+        .top-bar { background-color: var(--surface); padding: env(safe-area-inset-top, 20px) 20px 20px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .live-indicator { display: flex; align-items: center; gap: 8px; color: var(--gold); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .pulse { width: 10px; height: 10px; background-color: var(--gold); border-radius: 50%; box-shadow: 0 0 10px var(--gold); animation: pulse-anim 1.5s infinite; }
+        @keyframes pulse-anim { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.4); } 100% { opacity: 1; transform: scale(1); } }
         
-        .app-content { flex: 1; overflow-y: auto; padding-bottom: 100px; }
-        #print-area { background-color: var(--surface); max-width: 1000px; margin: 0 auto; min-height: 100%; }
-        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid var(--bg-main); }
-        .header h1 { font-size: 22px; font-weight: 700; color: var(--primary); text-transform: uppercase; }
-        .date-picker-wrapper { margin-top: 15px; background: var(--bg-main); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); display: inline-block; }
-        .date-picker-wrapper input { border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--primary); outline: none; }
+        .app-content { flex: 1; overflow-y: auto; padding-bottom: 120px; }
+        #print-area { max-width: 1000px; margin: 0 auto; min-height: 100%; padding-bottom: 30px; }
         
-        .table-container { padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; min-width: 700px; }
-        th { text-align: left; padding: 0 10px 10px 10px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
-        tr.staff-row { background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-radius: 12px; }
-        td { padding: 15px 10px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }
-        tr.staff-row td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; font-weight: 600; color: var(--primary); }
-        tr.staff-row td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; text-align: center; }
+        .header { padding: 40px 20px 20px 20px; text-align: center; }
+        .header h1 { font-size: 26px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+        .header p { font-size: 14px; color: var(--text-muted); margin-top: 5px; }
         
-        .status-badge { display: inline-block; padding: 8px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; text-transform: uppercase; width: 85px; }
-        .absent { background-color: var(--absent-bg); color: var(--absent-text); }
-        .present { background-color: var(--present-bg); color: var(--present-text); }
+        .admin-controls { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; padding: 0 20px; }
+        .date-picker-wrapper { background: var(--surface-light); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .date-picker-wrapper input { border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--gold-light); outline: none; color-scheme: dark; }
         
-        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); padding: 15px 20px calc(env(safe-area-inset-bottom, 15px) + 15px) 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); display: flex; justify-content: center; }
-        .btn-download { width: 100%; max-width: 1000px; border: none; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background-color: var(--primary); color: white; }
+        .btn-manage-staff { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-manage-staff:active { background: var(--gold); color: black; }
+
+        .table-container { padding: 0 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 12px; min-width: 700px; }
+        th { text-align: left; padding: 0 15px 10px 15px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        tr.staff-row { background: var(--surface); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        td { padding: 18px 15px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }
+        tr.staff-row td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 16px; border-bottom-left-radius: 16px; font-weight: 600; color: var(--gold-light); }
+        tr.staff-row td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 16px; border-bottom-right-radius: 16px; text-align: center; }
         
-        .pdf-mode .top-bar, .pdf-mode .bottom-bar { display: none !important; }
+        .status-badge { display: inline-block; padding: 8px 14px; border-radius: 30px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 90px; }
+        .absent { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .present { background-color: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(10px); padding: 20px 20px calc(env(safe-area-inset-bottom, 20px) + 20px) 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; }
+        .btn-download { width: 100%; max-width: 1000px; border: none; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 600; letter-spacing: 1px; cursor: pointer; background: linear-gradient(135deg, var(--gold), #aa8c2c); color: #000; text-transform: uppercase; box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2); transition: 0.2s; }
+        .btn-download:active { transform: scale(0.98); }
+
+        /* ================= STAFF MANAGEMENT MODAL ================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface); border: 1px solid var(--gold); border-radius: 24px; width: 100%; max-width: 500px; padding: 30px; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-content h2 { color: var(--gold); margin-bottom: 20px; font-size: 22px; }
+        .staff-list-editor { flex: 1; overflow-y: auto; margin-bottom: 20px; }
+        .staff-edit-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-dark); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .staff-edit-item span { font-weight: 500; color: white; }
+        .action-btns button { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; margin-left: 8px; font-size: 12px; }
+        .btn-edit { background: var(--surface-light); color: var(--gold); border: 1px solid var(--gold); }
+        .btn-del { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .add-staff-form { display: flex; gap: 10px; margin-top: 10px; }
+        .add-staff-form input { flex: 1; padding: 12px 15px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-dark); color: white; outline: none; }
+        .add-staff-form button { padding: 12px 20px; border-radius: 10px; border: none; background: var(--gold); color: black; font-weight: 600; cursor: pointer; }
+
+        /* ================= PDF MODE (Forces Clean White Look for Print) ================= */
+        .pdf-mode { background: white !important; color: black !important; }
+        .pdf-mode .top-bar, .pdf-mode .bottom-bar, .pdf-mode .admin-controls { display: none !important; }
+        .pdf-mode #print-area { padding-bottom: 0; }
+        .pdf-mode .header h1 { color: black !important; }
+        .pdf-mode table, .pdf-mode tr.staff-row td { background: white !important; color: black !important; border-color: #ddd !important; box-shadow: none !important; }
+        .pdf-mode .status-badge.absent { border: 1px solid red; color: red; background: transparent; }
+        .pdf-mode .status-badge.present { border: 1px solid green; color: green; background: transparent; }
+        .pdf-mode tr.staff-row td:first-child { color: black !important; }
     </style>
 </head>
 <body>
@@ -80,39 +129,47 @@
     <!-- 1. ROLE SELECTION SCREEN -->
     <div id="role-select-view" class="view active">
         <div class="logo-title">Magnum SKL</div>
-        <p style="color: #cbd5e1; margin-bottom: 40px;">Select Your Portal</p>
-        <button class="role-btn btn-staff" onclick="openStaff()">📱 I am Staff</button>
-        <button class="role-btn btn-admin" onclick="openAdmin()">🔒 I am Admin</button>
+        <p style="color: var(--text-muted); margin-bottom: 50px; font-style: italic;">Premium Fabric Team Portal</p>
+        <button class="role-btn btn-staff" onclick="openStaff()">Staff Login</button>
+        <button class="role-btn btn-admin" onclick="openAdmin()">Admin Portal</button>
     </div>
 
     <!-- 2. STAFF APP SCREEN -->
     <div id="staff-view" class="view">
         <div class="staff-card">
             <h2>Welcome to Work</h2>
-            <select id="staffNameSelect" onchange="loadStaffState()"></select>
+            <select id="staffNameSelect" onchange="loadStaffState()">
+                <option value="" disabled selected>Loading staff...</option>
+            </select>
             
             <button id="btnIn" class="big-punch-btn bg-in" onclick="staffPunch('in')">⚡ PUNCH IN</button>
             <button id="btnOut" class="big-punch-btn bg-out" onclick="staffPunch('out')">⚡ PUNCH OUT</button>
             
-            <p style="margin-top: 20px; font-size: 12px; color: var(--text-muted); cursor: pointer;" onclick="logout()">← Back to Start</p>
+            <p style="margin-top: 25px; font-size: 13px; color: var(--gold); cursor: pointer; font-weight: 500;" onclick="logout()">← Change Role</p>
         </div>
     </div>
 
     <!-- 3. ADMIN APP SCREEN -->
     <div id="admin-view" class="view">
         <div class="top-bar">
-            <div class="live-indicator"><div class="pulse"></div> Live Sync</div>
-            <button style="background: transparent; color: white; border: none; font-size: 12px; cursor: pointer;" onclick="logout()">Logout</button>
+            <div class="live-indicator"><div class="pulse"></div> Live Sync Active</div>
+            <button style="background: transparent; color: var(--text-muted); border: none; font-size: 13px; cursor: pointer; font-weight: 500;" onclick="logout()">Logout</button>
         </div>
+        
         <div class="app-content">
             <div id="print-area">
                 <div class="header">
                     <h1>Admin Dashboard</h1>
-                    <p>Fabric Team • Live Attendance</p>
+                    <p>Magnum Clothing SKL • Daily Log</p>
+                </div>
+                
+                <div class="admin-controls">
                     <div class="date-picker-wrapper">
                         <input type="date" id="attendanceDate" onchange="loadAdminData()">
                     </div>
+                    <button class="btn-manage-staff" onclick="openStaffManager()">⚙️ Manage Staff</button>
                 </div>
+
                 <div class="table-container">
                     <table id="attendanceTable">
                         <thead>
@@ -129,13 +186,29 @@
                 </div>
             </div>
         </div>
+        
         <div class="bottom-bar">
-            <button class="btn-download" onclick="generatePDF()">⭳ Download PDF Report</button>
+            <button class="btn-download" onclick="generatePDF()">Download Royal PDF Report</button>
+        </div>
+    </div>
+
+    <!-- 4. STAFF MANAGER MODAL (Admin Only) -->
+    <div class="modal-overlay" id="staffModal">
+        <div class="modal-content">
+            <h2>Manage Staff Directory</h2>
+            <div class="staff-list-editor" id="staffEditorList">
+                <!-- Staff items injected here -->
+            </div>
+            <div class="add-staff-form">
+                <input type="text" id="newStaffName" placeholder="Enter new staff name...">
+                <button onclick="addNewStaff()">Add</button>
+            </div>
+            <button style="margin-top: 20px; padding: 15px; border-radius: 12px; background: var(--surface-light); color: white; border: none; cursor: pointer; font-weight: 600;" onclick="closeStaffManager()">Close Window</button>
         </div>
     </div>
 
     <script>
-        // FIREBASE CONFIGURATION (Added your credentials)
+        // ================= FIREBASE CONFIG (YOURS) =================
         const firebaseConfig = {
             apiKey: "AIzaSyCd3HHP3hHLBnEkqOvK8jgBAGE99_mj_6k",
             authDomain: "magnum-clothing-attendance.firebaseapp.com",
@@ -152,11 +225,11 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
         } catch(e) {
-            console.error("Firebase not configured");
+            alert("Firebase connection error. Check internet or config.");
         }
 
-        // UNGA STAFF LIST (Edit this list freely)
-        const staffList = ["Gokul P", "Karthik", "Ramesh", "Suresh", "Manoj"];
+        // Global State for Dynamic Staff List
+        let globalStaffList = [];
 
         // Utils
         function getLocalDate() {
@@ -173,15 +246,46 @@
         }
         function logout() { switchView('role-select-view'); }
 
+        // ================= APP INITIALIZATION =================
+        // Listen to live staff list changes from Firebase
+        if (db) {
+            db.ref('magnum_settings/staffList').on('value', snap => {
+                const data = snap.val();
+                if (data && Array.isArray(data)) {
+                    globalStaffList = data;
+                } else {
+                    // Default if database is empty
+                    globalStaffList = ["Gokul P"];
+                    db.ref('magnum_settings/staffList').set(globalStaffList);
+                }
+                
+                // If Staff App is open, update dropdown
+                if (document.getElementById('staff-view').classList.contains('active')) {
+                    populateStaffDropdown();
+                }
+                
+                // If Admin App is open, update table
+                if (document.getElementById('admin-view').classList.contains('active')) {
+                    initAdminTable();
+                    loadAdminData();
+                }
+
+                // If Manager Modal is open, update list
+                if (document.getElementById('staffModal').classList.contains('active')) {
+                    renderStaffEditorList();
+                }
+            });
+        }
+
         // ================= ADMIN LOGIC =================
         function openAdmin() {
             const pin = prompt("Enter Admin Password (PIN):");
-            if (pin === "1234") { // MACHI, PASSWORD INGA MAATHIKALAM
+            if (pin === "1234") { 
                 switchView('admin-view');
                 document.getElementById('attendanceDate').value = getLocalDate();
                 initAdminTable();
                 loadAdminData();
-            } else {
+            } else if(pin !== null) {
                 alert("Wrong Password!");
             }
         }
@@ -189,13 +293,19 @@
         function initAdminTable() {
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
-            staffList.forEach((name, index) => {
+            
+            if(globalStaffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No staff added yet. Click 'Manage Staff'.</td></tr>`;
+                return;
+            }
+
+            globalStaffList.forEach((name, index) => {
                 tbody.innerHTML += `
                     <tr class="staff-row" id="row-${index}">
                         <td>${name}</td>
-                        <td id="in-${index}">--:--</td>
-                        <td id="out-${index}">--:--</td>
-                        <td style="text-align:center; font-weight:700; color:var(--accent);" id="hrs-${index}">0.00</td>
+                        <td id="in-${index}" style="color:var(--text-muted)">--:--</td>
+                        <td id="out-${index}" style="color:var(--text-muted)">--:--</td>
+                        <td style="text-align:center; font-weight:700; color:var(--gold);" id="hrs-${index}">0.00</td>
                         <td><span class="status-badge absent" id="status-${index}">Absent</span></td>
                     </tr>
                 `;
@@ -203,23 +313,33 @@
         }
 
         function loadAdminData() {
-            if(!db) return alert("Admin hasn't added Firebase config yet!");
+            if(!db) return;
             const date = document.getElementById('attendanceDate').value;
+            
+            // Unsubscribe from old date listener to prevent memory leaks
+            db.ref(`magnum_attendance`).off(); 
             
             db.ref(`magnum_attendance/${date}`).on('value', snap => {
                 const data = snap.val() || {};
                 
-                staffList.forEach((name, index) => {
+                globalStaffList.forEach((name, index) => {
                     const rowData = data[name] || {};
                     const inTime = rowData.in || "";
                     const outTime = rowData.out || "";
                     
-                    document.getElementById(`in-${index}`).innerText = inTime || "--:--";
-                    document.getElementById(`out-${index}`).innerText = outTime || "--:--";
-                    
+                    const inEl = document.getElementById(`in-${index}`);
+                    const outEl = document.getElementById(`out-${index}`);
                     const statusBadge = document.getElementById(`status-${index}`);
                     const hrs = document.getElementById(`hrs-${index}`);
 
+                    if(!inEl) return; // Prevent error if DOM isn't ready
+
+                    inEl.innerText = inTime || "--:--";
+                    inEl.style.color = inTime ? "white" : "var(--text-muted)";
+                    
+                    outEl.innerText = outTime || "--:--";
+                    outEl.style.color = outTime ? "white" : "var(--text-muted)";
+                    
                     if (inTime || outTime) {
                         statusBadge.innerText = "Present";
                         statusBadge.className = "status-badge present";
@@ -246,38 +366,103 @@
             
             const opt = {
                 margin: [0.5, 0.5, 0.5, 0.5],
-                filename: `Magnum_Attendance_${dateValue}.pdf`,
+                filename: `Magnum_Premium_Log_${dateValue}.pdf`,
                 image: { type: 'jpeg', quality: 1.0 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
+            
             html2pdf().set(opt).from(element).save().then(() => document.body.classList.remove('pdf-mode'));
         }
 
-        // ================= STAFF LOGIC =================
+        // ================= MANAGE STAFF LOGIC =================
+        function openStaffManager() {
+            document.getElementById('staffModal').classList.add('active');
+            renderStaffEditorList();
+        }
+
+        function closeStaffManager() {
+            document.getElementById('staffModal').classList.remove('active');
+        }
+
+        function renderStaffEditorList() {
+            const listDiv = document.getElementById('staffEditorList');
+            listDiv.innerHTML = "";
+            globalStaffList.forEach((name, index) => {
+                listDiv.innerHTML += `
+                    <div class="staff-edit-item">
+                        <span>${name}</span>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="editStaff(${index})">Edit</button>
+                            <button class="btn-del" onclick="deleteStaff(${index})">Del</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addNewStaff() {
+            const input = document.getElementById('newStaffName');
+            const name = input.value.trim();
+            if(name && !globalStaffList.includes(name)) {
+                globalStaffList.push(name);
+                db.ref('magnum_settings/staffList').set(globalStaffList);
+                input.value = "";
+            } else if(globalStaffList.includes(name)) {
+                alert("Staff name already exists!");
+            }
+        }
+
+        function editStaff(index) {
+            const oldName = globalStaffList[index];
+            const newName = prompt("Edit staff name:", oldName);
+            if(newName && newName.trim() !== "" && newName !== oldName) {
+                globalStaffList[index] = newName.trim();
+                db.ref('magnum_settings/staffList').set(globalStaffList);
+                // Note: Past records in DB will still have the old name. This only updates future tracking.
+            }
+        }
+
+        function deleteStaff(index) {
+            if(confirm(`Are you sure you want to remove "${globalStaffList[index]}"?`)) {
+                globalStaffList.splice(index, 1);
+                db.ref('magnum_settings/staffList').set(globalStaffList);
+            }
+        }
+
+        // ================= STAFF APP LOGIC =================
         function openStaff() {
             switchView('staff-view');
+            populateStaffDropdown();
+        }
+
+        function populateStaffDropdown() {
             const sel = document.getElementById('staffNameSelect');
             sel.innerHTML = '<option value="" disabled selected>Select Your Name...</option>';
-            staffList.forEach(name => {
+            globalStaffList.forEach(name => {
                 sel.innerHTML += `<option value="${name}">${name}</option>`;
             });
             document.getElementById('btnIn').disabled = true;
             document.getElementById('btnOut').disabled = true;
+            document.getElementById('btnIn').innerText = "⚡ PUNCH IN";
+            document.getElementById('btnOut').innerText = "⚡ PUNCH OUT";
         }
 
         function loadStaffState() {
-            if(!db) return alert("Firebase Config Missing!");
+            if(!db) return;
             const name = document.getElementById('staffNameSelect').value;
             const today = getLocalDate();
             
+            // Prevent multiple listeners if they change names repeatedly
+            db.ref(`magnum_attendance/${today}`).off(); 
+
             db.ref(`magnum_attendance/${today}/${name}`).on('value', snap => {
                 const data = snap.val() || {};
                 const inBtn = document.getElementById('btnIn');
                 const outBtn = document.getElementById('btnOut');
                 
                 if (data.in) {
-                    inBtn.innerText = "✅ IN at " + data.in;
+                    inBtn.innerText = "✅ IN: " + data.in;
                     inBtn.disabled = true;
                 } else {
                     inBtn.innerText = "⚡ PUNCH IN";
@@ -285,11 +470,10 @@
                 }
 
                 if (data.out) {
-                    outBtn.innerText = "✅ OUT at " + data.out;
+                    outBtn.innerText = "✅ OUT: " + data.out;
                     outBtn.disabled = true;
                 } else {
                     outBtn.innerText = "⚡ PUNCH OUT";
-                    // Only allow punch out if they have punched in
                     outBtn.disabled = !data.in; 
                 }
             });
@@ -303,6 +487,11 @@
             
             db.ref(`magnum_attendance/${today}/${name}`).update({
                 [type]: time
+            }).then(() => {
+                // Optional: visual vibration or feedback on success
+                if(navigator.vibrate) navigator.vibrate(50);
+            }).catch(error => {
+                alert("Error connecting to server. Check internet.");
             });
         }
     </script>
